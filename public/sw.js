@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atelier-app-v5';
+const CACHE_NAME = 'atelier-app-v6';
 
 const findScriptAssets = (script, baseUrl) => {
   const assetUrls = [...script.matchAll(/["'`]([^"'`]+\.js(?:\?[^"'`]*)?)["'`]/g)].map((match) => match[1]);

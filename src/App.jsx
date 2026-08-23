@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc, query, where } from "firebase/firestore";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
 
@@ -18,26 +18,25 @@ import ModalPago from './components/modals/ModalPago';
 import ModalAlias from './components/modals/ModalAlias';
 import ModalFotoAmpliada from './components/modals/ModalFotoAmpliada';
 
-// Carga perezosa (Code-Splitting) para optimizar el rendimiento y bundle inicial
-const LoginView = lazy(() => import('./views/LoginView'));
-const DashboardView = lazy(() => import('./views/DashboardView'));
-const SolicitudesView = lazy(() => import('./views/SolicitudesView'));
-const DetallePedidoView = lazy(() => import('./views/DetallePedidoView'));
-const NuevoPedidoView = lazy(() => import('./views/NuevoPedidoView'));
-const ClientesView = lazy(() => import('./views/ClientesView'));
-const NuevoClienteView = lazy(() => import('./views/NuevoClienteView'));
-const EditarClienteView = lazy(() => import('./views/EditarClienteView'));
-const DetalleClienteView = lazy(() => import('./views/DetalleClienteView'));
-const CatalogoTelasView = lazy(() => import('./views/CatalogoTelasView'));
-const NuevaTelaView = lazy(() => import('./views/NuevaTelaView'));
-const EditarTelaView = lazy(() => import('./views/EditarTelaView'));
-const DetalleTelaView = lazy(() => import('./views/DetalleTelaView'));
-const CatalogoAviosView = lazy(() => import('./views/CatalogoAviosView'));
-const NuevoAvioView = lazy(() => import('./views/NuevoAvioView'));
-const EditarAvioView = lazy(() => import('./views/EditarAvioView'));
-const DetalleAvioView = lazy(() => import('./views/DetalleAvioView'));
-const CalculadoraView = lazy(() => import('./views/CalculadoraView'));
-const GananciasView = lazy(() => import('./views/GananciasView'));
+import LoginView from './views/LoginView';
+import DashboardView from './views/DashboardView';
+import SolicitudesView from './views/SolicitudesView';
+import DetallePedidoView from './views/DetallePedidoView';
+import NuevoPedidoView from './views/NuevoPedidoView';
+import ClientesView from './views/ClientesView';
+import NuevoClienteView from './views/NuevoClienteView';
+import EditarClienteView from './views/EditarClienteView';
+import DetalleClienteView from './views/DetalleClienteView';
+import CatalogoTelasView from './views/CatalogoTelasView';
+import NuevaTelaView from './views/NuevaTelaView';
+import EditarTelaView from './views/EditarTelaView';
+import DetalleTelaView from './views/DetalleTelaView';
+import CatalogoAviosView from './views/CatalogoAviosView';
+import NuevoAvioView from './views/NuevoAvioView';
+import EditarAvioView from './views/EditarAvioView';
+import DetalleAvioView from './views/DetalleAvioView';
+import CalculadoraView from './views/CalculadoraView';
+import GananciasView from './views/GananciasView';
 
 const ViewLoadingFallback = () => (
   <div className="py-20 flex justify-center items-center text-stone-500 text-sm italic">
