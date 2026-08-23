@@ -225,7 +225,9 @@ export default function DashboardView({
                 )}
 
                 {(() => {
-                  const telefonoContacto = p.telefono || (clientes.find(c => (p.clienteId && c.id === p.clienteId) || (c.nombre && p.cliente && c.nombre.toLowerCase() === p.cliente.toLowerCase()))?.telefono);
+                  const telefonoContacto = esAdmin
+                    ? p.telefono || (clientes.find(c => (p.clienteId && c.id === p.clienteId) || (c.nombre && p.cliente && c.nombre.toLowerCase() === p.cliente.toLowerCase()))?.telefono)
+                    : '3435302448';
                   if (!telefonoContacto) return null;
                   const mensaje = esAdmin 
                     ? `Hola ${p.cliente}, te escribo desde Atelier Kamurina por tu pedido de ${p.prenda} para coordinar detalles y fotos.` 

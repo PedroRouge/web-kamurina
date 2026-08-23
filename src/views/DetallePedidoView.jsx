@@ -183,7 +183,9 @@ export default function DetallePedidoView({
       </div>
 
       {(() => {
-        const telefonoContacto = pedidoSeleccionado.telefono || (clientes.find(c => (pedidoSeleccionado.clienteId && c.id === pedidoSeleccionado.clienteId) || (c.nombre && pedidoSeleccionado.cliente && c.nombre.toLowerCase() === pedidoSeleccionado.cliente.toLowerCase()))?.telefono);
+        const telefonoContacto = esAdmin
+          ? pedidoSeleccionado.telefono || (clientes.find(c => (pedidoSeleccionado.clienteId && c.id === pedidoSeleccionado.clienteId) || (c.nombre && pedidoSeleccionado.cliente && c.nombre.toLowerCase() === pedidoSeleccionado.cliente.toLowerCase()))?.telefono)
+          : '3435302448';
         if (!telefonoContacto) return null;
         const mensaje = esAdmin 
           ? `Hola ${pedidoSeleccionado.cliente}, te escribo desde Atelier Kamurina por tu pedido de ${pedidoSeleccionado.prenda}.` 
