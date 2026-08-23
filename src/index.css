@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .print-ficha-exclusiva, .print-ficha-exclusiva *, .print-ganancias-exclusiva, .print-ganancias-exclusiva * {
+    visibility: visible !important;
+  }
+  .print-ficha-exclusiva, .print-ganancias-exclusiva {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    background: white !important;
+    color: black !important;
+    z-index: 999999;
+    padding: 20px;
+    display: block !important;
+  }
+}

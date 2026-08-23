@@ -1,0 +1,175 @@
+import React from 'react';
+import { doc, setDoc } from "firebase/firestore";
+import { db } from '../services/firebase';
+import { subirACloudinary } from '../services/cloudinary';
+
+export default function DetalleClienteView({
+  clienteSeleccionado,
+  cambiarVista,
+  setModalConfirm,
+  borrarCliente,
+  pedidos,
+  borrarPedidoDefinitivo,
+  setFotoAmpliada,
+  setIsSaving,
+  mostrarToast,
+  handleKeyDownEnter
+}) {
+  if (!clienteSeleccionado) return null;
+
+  const pedidosDelCliente = pedidos.filter(p => 
+    (p.clienteId && p.clienteId === clienteSeleccionado.id) || 
+    (p.cliente && clienteSeleccionado.nombre && p.cliente.toLowerCase() === clienteSeleccionado.nombre.toLowerCase())
+  );
+
+  return (
+    <>
+      <div className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-6 md:p-8 rounded-3xl max-w-2xl mx-auto relative">
+        <button onClick={() => cambiarVista('clientes')} className="absolute top-4 right-4 text-stone-400 hover:text-white">Volver</button>
+        <h2 className="text-3xl font-bold mb-1">{clienteSeleccionado.nombre}</h2>
+        <p className="text-stone-400 text-sm mb-6">{clienteSeleccionado.telefono}</p>
+         
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <button onClick={() => cambiarVista('editar-cliente')} className="bg-stone-800 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-stone-700 hover:bg-stone-700 font-medium">Editar Datos y Medidas</button>
+          <button onClick={() => window.print()} className="bg-stone-800 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-stone-700 hover:bg-stone-700 font-medium">Imprimir Ficha</button>
+          <button 
+            onClick={() => setModalConfirm({ isOpen: true, text: "¿Estás segura de que quieres eliminar este cliente?", action: () => borrarCliente(clienteSeleccionado.id) })} 
+            className="bg-red-950/40 text-red-400 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-red-900/50 hover:bg-red-900/40 font-medium"
+          >
+            Eliminar Cliente
+          </button>
+        </div>
+
+        <h3 className="text-lg font-semibold mb-3">Medidas Registradas</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs mb-8 bg-stone-950/50 p-4 rounded-2xl border border-stone-800">
+          {Object.entries(clienteSeleccionado.medidas || {}).map(([k, v]) => (
+            <div key={k} className="text-stone-300"><strong>{k}:</strong> {v || 'N/A'}</div>
+          ))}
+        </div>
+
+        <h3 className="text-lg font-semibold mb-3">Historial de Pedidos</h3>
+        <div className="space-y-4">
+          {pedidosDelCliente.length === 0 ? (
+            <p className="text-stone-500 text-xs italic">No hay pedidos registrados para este cliente.</p>
+          ) : (
+            pedidosDelCliente.map(p => {
+              const arrayFotos = p.fotos || (p.foto ? [p.foto] : []);
+              const esRechazado = p.estado === 'Rechazado';
+              return (
+                <div key={p.id} className={`bg-stone-950/40 border p-4 rounded-2xl flex flex-col gap-3 relative ${esRechazado ? 'border-red-900/50' : 'border-stone-800'}`}>
+                  <button 
+                    onClick={() => setModalConfirm({ isOpen: true, text: "¿Estás segura de que quieres eliminar definitivamente este pedido?", action: () => borrarPedidoDefinitivo(p.id) })} 
+                    className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs"
+                  >
+                    ✕
+                  </button>
+                   
+                  <div className="flex justify-between items-center pr-6">
+                    <span className="text-xs font-bold">{p.prenda} (<span className={esRechazado ? "text-red-400" : ""}>{p.estado}</span>)</span>
+                    <span className="text-xs text-stone-400">{p.entrega}</span>
+                  </div>
+
+                  {p.descripcionDetalle && (
+                    <p className="text-xs text-stone-300 bg-stone-900/60 p-2.5 rounded-xl border border-stone-800"><strong>Detalles:</strong> {p.descripcionDetalle}</p>
+                  )}
+
+                  {esRechazado && p.motivoRechazo && (
+                    <p className="text-xs text-red-300 bg-red-950/40 p-2 rounded-xl"><strong>Motivo rechazo:</strong> {p.motivoRechazo}</p>
+                  )}
+                   
+                  <div className="text-sm font-semibold">{p.precio > 0 ? `$${p.precio.toLocaleString()}` : 'Sin precio asignado'}</div>
+
+                  {arrayFotos.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto pb-2">
+                      {arrayFotos.map((img, i) => (
+                        <div key={i} className="relative flex-shrink-0">
+                          <img 
+                            src={img} 
+                            alt={`Trabajo ${i+1}`} 
+                            className="w-24 h-24 object-contain bg-stone-950/60 rounded-xl border border-stone-800 cursor-pointer hover:opacity-80 transition-opacity" 
+                            onClick={() => setFotoAmpliada(img)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setModalConfirm({
+                                isOpen: true,
+                                text: "¿Estás seguro de que quieres eliminar esta foto?",
+                                action: async () => {
+                                  try {
+                                    setIsSaving(true);
+                                    const nuevasFotos = arrayFotos.filter((_, index) => index !== i);
+                                    const actualizado = { ...p, fotos: nuevasFotos, foto: nuevasFotos[0] || '' };
+                                    await setDoc(doc(db, "pedidos", String(p.id)), actualizado, { merge: true });
+                                    mostrarToast("Foto eliminada con éxito");
+                                  } catch (err) {
+                                    mostrarToast("Error al eliminar la foto");
+                                  } finally {
+                                    setIsSaving(false);
+                                  }
+                                }
+                              });
+                            }}
+                            className="absolute top-1 right-1 bg-stone-950/80 text-stone-400 hover:text-red-400 w-5 h-5 rounded-full flex items-center justify-center text-[10px] border border-stone-800"
+                            title="Eliminar foto"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    setIsSaving(true);
+                    try {
+                      const archivoFoto = e.target.nuevaFotoArchivo.files[0];
+                      let url = "";
+                      if (archivoFoto) {
+                        url = await subirACloudinary(archivoFoto);
+                      }
+                      if (url) {
+                        const fotosActualizadas = [...arrayFotos, url];
+                        const actualizado = { ...p, fotos: fotosActualizadas };
+                        await setDoc(doc(db, "pedidos", String(p.id)), actualizado, { merge: true });
+                        e.target.reset();
+                        mostrarToast("Foto agregada");
+                      }
+                    } catch (err) {
+                      mostrarToast("Error al agregar foto");
+                    } finally {
+                      setIsSaving(false);
+                    }
+                  }} onKeyDown={handleKeyDownEnter} className="flex flex-col sm:flex-row gap-2 mt-1">
+                    <input name="nuevaFotoArchivo" type="file" accept="image/*" className="w-full bg-stone-900/50 p-2 rounded-xl border border-stone-800 outline-none text-xs text-stone-300 file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-stone-800 file:text-white hover:file:bg-stone-700 cursor-pointer" />
+                    <button type="submit" className="bg-stone-800 px-4 py-2 rounded-xl text-xs border border-stone-700 hover:bg-stone-700 font-medium">Agregar</button>
+                  </form>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      <div className="print-ficha-exclusiva hidden">
+        <div className="border-b-2 border-black pb-4 mb-6">
+          <h1 className="text-3xl font-bold tracking-tight text-black">ATELIER KAMURINA - FICHA DE CLIENTE</h1>
+        </div>
+        <div className="mb-6 space-y-1">
+          <p className="text-xl font-bold text-black">Cliente: {clienteSeleccionado.nombre}</p>
+          <p className="text-sm text-gray-700">Teléfono: {clienteSeleccionado.telefono}</p>
+        </div>
+        <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-4 text-black">Medidas Registradas</h3>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+          {Object.entries(clienteSeleccionado.medidas || {}).map(([k, v]) => (
+            <div key={k} className="flex justify-between border-b border-gray-200 py-1.5">
+              <span className="text-gray-800 font-medium">{k}:</span>
+              <span className="font-bold text-black">{v || 'N/A'}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
