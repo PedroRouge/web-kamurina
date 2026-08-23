@@ -261,13 +261,13 @@ export default function App() {
     } else {
       const userIdentifier = user.displayName || user.email;
       if (userIdentifier) {
-        const qPedidos = query(collection(db, "pedidos"), where("cliente", "==", userIdentifier));
+        const qPedidos = query(collection(db, "pedidos"), where("clienteId", "==", user.uid));
         unsubPedidos = onSnapshot(qPedidos, (snapshot) => {
           const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
           setPedidos(list);
         }, (err) => console.error("Error leyendo pedidos del cliente:", err));
 
-        const qClientes = query(collection(db, "clientes"), where("nombre", "==", userIdentifier));
+        const qClientes = query(collection(db, "clientes"), where("id", "==", user.uid));
         unsubClientes = onSnapshot(qClientes, (snapshot) => {
           const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
           setClientes(list);

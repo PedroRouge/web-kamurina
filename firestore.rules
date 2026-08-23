@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() {
+      return request.auth != null;
+    }
+
+    function admin() {
+      return autenticado()
+        && get(/databases/$(database)/documents/usuarios_roles/$(request.auth.uid)).data.rol == 'admin';
+    }
+
+    match /usuarios_roles/{userId} {
+      allow read: if autenticado() && (request.auth.uid == userId || admin());
+      allow write: if admin();
+    }
+
+    match /telas/{telaId} {
+      allow read: if autenticado();
+      allow write: if admin();
+    }
+
+    match /avios/{avioId} {
+      allow read: if autenticado();
+      allow write: if admin();
+    }
+
+    match /clientes/{clienteId} {
+      allow read: if admin()
+        || (autenticado() && request.auth.uid == clienteId);
+
+      allow create: if admin()
+        || (autenticado() && request.resource.data.id == request.auth.uid);
+
+      allow update, delete: if admin()
+        || (autenticado() && resource.data.id == request.auth.uid);
+    }
+
+    match /pedidos/{pedidoId} {
+      allow read: if admin()
+        || (autenticado() && resource.data.clienteId == request.auth.uid);
+
+      allow create: if admin()
+        || (autenticado() && request.resource.data.clienteId == request.auth.uid);
+
+      allow update, delete: if admin()
+        || (autenticado() && resource.data.clienteId == request.auth.uid);
+    }
+  }
+}
