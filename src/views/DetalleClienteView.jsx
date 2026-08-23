@@ -1,8 +1,10 @@
 import React from 'react';
 import { doc, setDoc } from "firebase/firestore";
 import { db } from '../services/firebase';
+import { MEDIDAS_LISTA } from '../constants/medidas';
 
 export default function DetalleClienteView({
+
   clienteSeleccionado,
   cambiarVista,
   setModalConfirm,
@@ -40,12 +42,13 @@ export default function DetalleClienteView({
           </button>
         </div>
 
-        <h3 className="text-lg font-semibold mb-3">Medidas Registradas</h3>
+                <h3 className="text-lg font-semibold mb-3">Medidas Registradas</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs mb-8 bg-stone-950/50 p-4 rounded-2xl border border-stone-800">
-          {Object.entries(clienteSeleccionado.medidas || {}).map(([k, v]) => (
-            <div key={k} className="text-stone-300"><strong>{k}:</strong> {v || 'N/A'}</div>
+          {MEDIDAS_LISTA.map(m => (
+            <div key={m} className="text-stone-300"><strong>{m}:</strong> {clienteSeleccionado.medidas?.[m] || 'N/A'}</div>
           ))}
         </div>
+
 
         <h3 className="text-lg font-semibold mb-3">Historial de Pedidos</h3>
         <div className="space-y-4">
@@ -163,15 +166,16 @@ export default function DetalleClienteView({
           <p className="text-xl font-bold text-black">Cliente: {clienteSeleccionado.nombre}</p>
           <p className="text-sm text-gray-700">Teléfono: {clienteSeleccionado.telefono}</p>
         </div>
-        <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-4 text-black">Medidas Registradas</h3>
+                <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-4 text-black">Medidas Registradas</h3>
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-          {Object.entries(clienteSeleccionado.medidas || {}).map(([k, v]) => (
-            <div key={k} className="flex justify-between border-b border-gray-200 py-1.5">
-              <span className="text-gray-800 font-medium">{k}:</span>
-              <span className="font-bold text-black">{v || 'N/A'}</span>
+          {MEDIDAS_LISTA.map(m => (
+            <div key={m} className="flex justify-between border-b border-gray-200 py-1.5">
+              <span className="text-gray-800 font-medium">{m}:</span>
+              <span className="font-bold text-black">{clienteSeleccionado.medidas?.[m] || 'N/A'}</span>
             </div>
           ))}
         </div>
+
       </div>
     </>
   );

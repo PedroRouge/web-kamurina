@@ -1,6 +1,8 @@
 import React from 'react';
+import { MEDIDAS_LISTA } from '../constants/medidas';
 
 export default function ClientesView({
+
   clientesFiltrados,
   setBusqueda,
   setClienteSeleccionado,
@@ -32,10 +34,13 @@ export default function ClientesView({
                 ✕
               </button>
               <h3 className="text-lg font-semibold cursor-pointer hover:underline" onClick={() => { setClienteSeleccionado(c); cambiarVista('detalle-cliente'); }}>{c.nombre}</h3>
-              <p className="text-stone-400 text-xs mb-4">{c.telefono}</p>
+                            <p className="text-stone-400 text-xs mb-4">{c.telefono}</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px] text-stone-500">
-                {Object.entries(c.medidas || {}).map(([k, v]) => <div key={k}>{k}: {v}</div>)}
+                {MEDIDAS_LISTA.map(m => (
+                  <div key={m}>{m}: {c.medidas?.[m] || '—'}</div>
+                ))}
               </div>
+
             </div>
           ))
         )}
