@@ -70,4 +70,4 @@ public/         Manifest y service worker
 
 ## Release actual
 
-Version estable: `v1.4.0`
+Version estable: `v1.8.0`
