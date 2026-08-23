@@ -8,6 +8,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
+    manifest: 'build-manifest.json',
     rollupOptions: {
       output: {
         manualChunks(id) {

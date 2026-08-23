@@ -1,4 +1,4 @@
-const CACHE_NAME = 'atelier-app-v4';
+const CACHE_NAME = 'atelier-app-v5';
 
 const findScriptAssets = (script, baseUrl) => {
   const assetUrls = [...script.matchAll(/["'`]([^"'`]+\.js(?:\?[^"'`]*)?)["'`]/g)].map((match) => match[1]);
@@ -15,6 +15,13 @@ const cacheAppShell = async () => {
   const html = await indexResponse.text();
   const htmlAssets = [...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map((match) => match[1]);
   pendingUrls.push(...htmlAssets);
+
+  const manifestResponse = await fetch('/build-manifest.json');
+  if (manifestResponse.ok) {
+    const manifest = await manifestResponse.json();
+    const manifestAssets = JSON.stringify(manifest).match(/(?:assets\/|\/assets\/)[^"']+\.(?:js|css|woff2?|png|jpe?g|svg|webp)/g) || [];
+    pendingUrls.push(...manifestAssets);
+  }
 
   const cachedUrls = new Set();
   while (pendingUrls.length > 0) {
