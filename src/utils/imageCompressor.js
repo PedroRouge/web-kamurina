@@ -32,7 +32,6 @@ export const comprimirImagen = async (archivo, maxWidth = 1600, maxHeight = 1600
             width = maxWidth;
           } else {
             width = Math.round((width * maxHeight) / height);
-            maxHeight = maxHeight;
           }
         }
 
