@@ -1,7 +1,7 @@
 import { comprimirImagen } from '../utils/imageCompressor';
 
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "t3cunnct";
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "atelier_preset_2026";
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "atelier_preset_2026_2026";
 
 export const subirACloudinary = async (archivo) => {
   if (!archivo) return "";
