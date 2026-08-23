@@ -1,4 +1,9 @@
-const CACHE_NAME = 'atelier-app-v3';
+const CACHE_NAME = 'atelier-app-v4';
+
+const findScriptAssets = (script, baseUrl) => {
+  const assetUrls = [...script.matchAll(/["'`]([^"'`]+\.js(?:\?[^"'`]*)?)["'`]/g)].map((match) => match[1]);
+  return assetUrls.map((assetUrl) => new URL(assetUrl, baseUrl).href);
+};
 
 const cacheAppShell = async () => {
   const cache = await caches.open(CACHE_NAME);
@@ -24,8 +29,7 @@ const cacheAppShell = async () => {
 
     if (absoluteUrl.pathname.endsWith('.js')) {
       const script = await response.text();
-      const moduleAssets = [...script.matchAll(/import\(["']([^"']+)["']\)/g)].map((match) => match[1]);
-      pendingUrls.push(...moduleAssets.map((moduleUrl) => new URL(moduleUrl, absoluteUrl).href));
+      pendingUrls.push(...findScriptAssets(script, absoluteUrl));
     }
   }
 };
