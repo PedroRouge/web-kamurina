@@ -30,6 +30,15 @@ const removePendingPhoto = async (id) => {
   });
 };
 
+const updatePendingPhoto = async (photo) => {
+  const database = await openDatabase();
+  return new Promise((resolve, reject) => {
+    const request = database.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(photo);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+};
+
 export const encolarFoto = async ({ archivo, coleccion, documentoId, campo = 'foto', agregar = false }) => {
   const database = await openDatabase();
   return new Promise((resolve, reject) => {
@@ -52,7 +61,10 @@ export const procesarColaFotos = async () => {
   const fotosPendientes = await readPendingPhotos();
   for (const foto of fotosPendientes) {
     try {
-      const url = await subirACloudinary(foto.archivo);
+      const url = foto.urlSubida || await subirACloudinary(foto.archivo);
+      if (!foto.urlSubida) {
+        await updatePendingPhoto({ ...foto, urlSubida: url });
+      }
       const referencia = doc(db, foto.coleccion, String(foto.documentoId));
       const snapshot = await getDoc(referencia);
       if (!snapshot.exists()) {
@@ -61,8 +73,9 @@ export const procesarColaFotos = async () => {
       }
 
       const datosActuales = snapshot.data();
+      const fotosActuales = datosActuales[foto.campo] || [];
       const valorActualizado = foto.agregar
-        ? [...(datosActuales[foto.campo] || []), url]
+        ? fotosActuales.includes(url) ? fotosActuales : [...fotosActuales, url]
         : url;
       await setDoc(referencia, { [foto.campo]: valorActualizado }, { merge: true });
       if (foto.agregar && foto.campo === 'fotos' && !datosActuales.foto) {
