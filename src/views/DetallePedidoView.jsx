@@ -1,7 +1,6 @@
 import React from 'react';
 import { doc, setDoc } from "firebase/firestore";
 import { db } from '../services/firebase';
-import { subirACloudinary } from '../services/cloudinary';
 
 export default function DetallePedidoView({
   pedidoSeleccionado,
@@ -17,7 +16,8 @@ export default function DetallePedidoView({
   setFotoAmpliada,
   eliminarPagoParcial,
   handleKeyDownEnter,
-  setIsSaving
+  setIsSaving,
+  subirOEncolarFoto
 }) {
   if (!pedidoSeleccionado) return null;
 
@@ -262,7 +262,7 @@ export default function DetallePedidoView({
             const archivoFoto = e.target.nuevaFotoArchivo.files[0];
             let url = "";
             if (archivoFoto) {
-              url = await subirACloudinary(archivoFoto);
+              url = await subirOEncolarFoto(archivoFoto, { coleccion: 'pedidos', documentoId: pedidoSeleccionado.id, campo: 'fotos', agregar: true });
             }
             if (url) {
               const fotosActualizadas = [...arrayFotos, url];
@@ -271,6 +271,9 @@ export default function DetallePedidoView({
               setPedidoSeleccionado(actualizado);
               e.target.reset();
               mostrarToast("Foto agregada con éxito");
+            } else if (archivoFoto) {
+              e.target.reset();
+              mostrarToast("Foto guardada para sincronizar");
             }
           } catch (err) {
             mostrarToast("Error al agregar foto");

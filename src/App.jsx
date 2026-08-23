@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithP
 
 import { db, auth, googleProvider } from './services/firebase';
 import { subirACloudinary } from './services/cloudinary';
+import { encolarFoto, iniciarProcesadorDeFotos } from './services/offlinePhotos';
 import { MEDIDAS_LISTA } from './constants/medidas';
 import { handleKeyDownEnter, generarIdPedido } from './utils/helpers';
 
@@ -95,6 +96,26 @@ export default function App() {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
+
+  const subirOEncolarFoto = async (archivo, destino) => {
+    if (!archivo || archivo.size === 0) return '';
+    if (!navigator.onLine) {
+      await encolarFoto({ archivo, ...destino });
+      return '';
+    }
+
+    try {
+      return await subirACloudinary(archivo);
+    } catch (err) {
+      if (err instanceof TypeError || !navigator.onLine) {
+        await encolarFoto({ archivo, ...destino });
+        return '';
+      }
+      throw err;
+    }
+  };
+
+  useEffect(() => iniciarProcesadorDeFotos(), []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -408,12 +429,8 @@ export default function App() {
     }
     try {
       const archivoFoto = fd.get('fotoArchivo');
-      let urlFoto = "";
-      if (archivoFoto && archivoFoto.size > 0) {
-        urlFoto = await subirACloudinary(archivoFoto);
-      }
-
       const id = crypto.randomUUID();
+      const urlFoto = await subirOEncolarFoto(archivoFoto, { coleccion: 'telas', documentoId: id });
       const nueva = { 
         id, 
         nombre: fd.get('nombre'), 
@@ -446,10 +463,7 @@ export default function App() {
     }
     try {
       const archivoFoto = fd.get('fotoArchivo');
-      let urlFoto = telaSeleccionada.foto;
-      if (archivoFoto && archivoFoto.size > 0) {
-        urlFoto = await subirACloudinary(archivoFoto);
-      }
+      const urlFoto = await subirOEncolarFoto(archivoFoto, { coleccion: 'telas', documentoId: telaSeleccionada.id });
 
       const actualizada = { 
         ...telaSeleccionada, 
@@ -458,7 +472,7 @@ export default function App() {
         uso: fd.get('uso'), 
         stock: fd.get('stock'), 
         precio: precio || 0,
-        foto: urlFoto 
+        foto: urlFoto || telaSeleccionada.foto
       };
       await setDoc(doc(db, "telas", String(telaSeleccionada.id)), actualizada);
       setTelaSeleccionada(actualizada);
@@ -484,12 +498,8 @@ export default function App() {
     }
     try {
       const archivoFoto = fd.get('fotoArchivo');
-      let urlFoto = "";
-      if (archivoFoto && archivoFoto.size > 0) {
-        urlFoto = await subirACloudinary(archivoFoto);
-      }
-
       const id = crypto.randomUUID();
+      const urlFoto = await subirOEncolarFoto(archivoFoto, { coleccion: 'avios', documentoId: id });
       const nuevo = { 
         id, 
         nombre: fd.get('nombre'), 
@@ -522,10 +532,7 @@ export default function App() {
     }
     try {
       const archivoFoto = fd.get('fotoArchivo');
-      let urlFoto = avioSeleccionado.foto;
-      if (archivoFoto && archivoFoto.size > 0) {
-        urlFoto = await subirACloudinary(archivoFoto);
-      }
+      const urlFoto = await subirOEncolarFoto(archivoFoto, { coleccion: 'avios', documentoId: avioSeleccionado.id });
 
       const actualizado = { 
         ...avioSeleccionado, 
@@ -534,7 +541,7 @@ export default function App() {
         centimetros: fd.get('centimetros'), 
         cantidad: fd.get('cantidad'), 
         precio: precio || 0,
-        foto: urlFoto 
+        foto: urlFoto || avioSeleccionado.foto
       };
       await setDoc(doc(db, "avios", String(avioSeleccionado.id)), actualizado);
       setAvioSeleccionado(actualizado);
@@ -560,14 +567,11 @@ export default function App() {
         return;
       }
 
-      const archivoFoto = fd.get('fotoArchivo');
-      let urlFoto = "";
-      if (archivoFoto && archivoFoto.size > 0) {
-        urlFoto = await subirACloudinary(archivoFoto);
-      }
-
       const timestamp = Date.now();
       const id = generarIdPedido(pedidos, esAdmin);
+
+      const archivoFoto = fd.get('fotoArchivo');
+      const urlFoto = await subirOEncolarFoto(archivoFoto, { coleccion: 'pedidos', documentoId: id, campo: 'fotos', agregar: true });
 
       let clienteId = '';
       let nombreCliente = '';
@@ -1029,6 +1033,7 @@ export default function App() {
               eliminarPagoParcial={eliminarPagoParcial}
               handleKeyDownEnter={handleKeyDownEnter}
               setIsSaving={setIsSaving}
+              subirOEncolarFoto={subirOEncolarFoto}
             />
           )}
 
@@ -1165,6 +1170,7 @@ export default function App() {
               setIsSaving={setIsSaving}
               mostrarToast={mostrarToast}
               handleKeyDownEnter={handleKeyDownEnter}
+              subirOEncolarFoto={subirOEncolarFoto}
             />
           )}
 
