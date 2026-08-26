@@ -858,23 +858,38 @@ export default function App() {
     }
   };
 
-  const borrarPedidoDefinitivo = async (idOrObj) => {
-    const idDef = typeof idOrObj === 'object' && idOrObj !== null ? idOrObj.id : idOrObj;
-    if (!idDef) return;
+const borrarPedidoDefinitivo = async (idOrObj) => {
+    // Extraer el ID exacto ya sea que llegue como string, número u objeto
+    let idDef = '';
+    if (typeof idOrObj === 'object' && idOrObj !== null) {
+      idDef = idOrObj.id || idOrObj._id;
+    } else {
+      idDef = idOrObj;
+    }
+
+    if (!idDef) {
+      mostrarToast("⚠️ Error: ID de pedido no válido");
+      return;
+    }
+
+    const idString = String(idDef).trim();
 
     try {
-      // Feedback visual optimista inmediato
-      setPedidos(prev => prev.filter(p => String(p.id) !== String(idDef)));
-      if (pedidoSeleccionado?.id === idDef) {
+      // 1. Actualización optimista inmediata en la interfaz
+      setPedidos(prev => prev.filter(p => String(p.id).trim() !== idString));
+      
+      if (pedidoSeleccionado && String(pedidoSeleccionado.id).trim() === idString) {
         setPedidoSeleccionado(null);
       }
 
-      await deleteDoc(doc(db, "pedidos", String(idDef)));
+      // 2. Borrado real en la base de datos de Firestore
+      await deleteDoc(doc(db, "pedidos", idString));
+      
       cambiarVista('dashboard', true);
-      mostrarToast("Pedido eliminado correctamente");
+      mostrarToast("Pedido eliminado definitivamente");
     } catch (err) {
-      console.error("Error borrar pedido:", err);
-      mostrarToast("Error al borrar pedido");
+      console.error("Error al borrar pedido en Firebase:", err);
+      mostrarToast("Error al borrar pedido de la base de datos");
     }
   };
 
