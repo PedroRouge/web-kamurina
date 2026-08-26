@@ -6,11 +6,14 @@ export default function NuevoPedidoView({
   esAdmin,
   clientes,
   user,
+  clienteActual,
   telas,
   cambiarVista,
   isSaving
 }) {
   const [preview, setPreview] = useState(null);
+  const nombreClienteMostrar = clienteActual?.nombre || user?.displayName || user?.email || 'Cliente';
+  const telefonoRegistrado = clienteActual?.telefono || '';
 
   return (
     <form onSubmit={crearPedido} onKeyDown={handleKeyDownEnter} className="bg-stone-900/40 p-6 md:p-8 rounded-3xl border border-stone-800 max-w-lg mx-auto">
@@ -23,25 +26,19 @@ export default function NuevoPedidoView({
         </select>
       ) : (
         <div className="mb-4 bg-stone-950 p-3 rounded-xl border border-stone-800 text-sm text-stone-400">
-          Cliente: <span className="text-white font-bold">{user?.displayName || user?.email}</span>
+          Cliente: <span className="text-white font-bold">{nombreClienteMostrar}</span>
         </div>
       )}
 
       <input name="prenda" placeholder="¿Qué prenda deseas mandar a hacer?" className="w-full bg-stone-950 p-3 rounded-xl mb-4 border border-stone-800 outline-none" required />
        
-      {!esAdmin && (() => {
-        const nombreActual = user?.displayName || user?.email;
-        const clienteExistente = clientes.find(c => (c.id === user?.uid) || (c.nombre && nombreActual && c.nombre.toLowerCase() === nombreActual.toLowerCase()));
-        const tieneTelefonoRegistrado = clienteExistente && clienteExistente.telefono && clienteExistente.telefono.trim() !== '';
-
-        if (tieneTelefonoRegistrado) {
-          return <input type="hidden" name="telefono" value={clienteExistente.telefono} />;
-        }
-
-        return (
+      {!esAdmin && (
+        telefonoRegistrado && telefonoRegistrado.trim() !== '' ? (
+          <input type="hidden" name="telefono" value={telefonoRegistrado} />
+        ) : (
           <input name="telefono" placeholder="Teléfono Móvil (Ej: 3434...)" className="w-full bg-stone-950 p-3 rounded-xl mb-4 border border-stone-800 outline-none" required />
-        );
-      })()}
+        )
+      )}
 
       {!esAdmin && (
         <div>

@@ -32,26 +32,36 @@ service cloud.firestore {
     }
 
     match /clientes/{clienteId} {
-      allow read: if admin()
-        || (autenticado() && (request.auth.uid == clienteId || resource.data.id == request.auth.uid));
+      allow read: if autenticado();
 
-      allow create: if admin()
-        || (autenticado() && (request.resource.data.id == request.auth.uid || clienteId == request.auth.uid));
+      allow create: if autenticado();
 
       allow update: if admin()
-        || (autenticado() && (resource.data.id == request.auth.uid || clienteId == request.auth.uid));
+        || (
+          autenticado() && (
+            resource.data.id == request.auth.uid 
+            || clienteId == request.auth.uid
+            || resource.data.authUid == request.auth.uid
+            || resource.data.email == request.auth.token.email
+          )
+        );
 
       allow delete: if admin();
     }
 
     match /pedidos/{pedidoId} {
       allow read: if admin()
-        || (autenticado() && resource.data.clienteId == request.auth.uid);
+        || (
+          autenticado() && (
+            resource.data.clienteId == request.auth.uid
+            || resource.data.authUid == request.auth.uid
+          )
+        );
 
       allow create: if admin()
         || (
           autenticado() 
-          && request.resource.data.clienteId == request.auth.uid
+          && (request.resource.data.clienteId == request.auth.uid || request.resource.data.authUid == request.auth.uid)
           && request.resource.data.estado == 'Pendiente de Aprobación'
           && request.resource.data.precio == 0
           && request.resource.data.pagado == false
@@ -60,8 +70,7 @@ service cloud.firestore {
       allow update: if admin()
         || (
           autenticado()
-          && resource.data.clienteId == request.auth.uid
-          && request.resource.data.clienteId == request.auth.uid
+          && (resource.data.clienteId == request.auth.uid || resource.data.authUid == request.auth.uid)
           && request.resource.data.precio == resource.data.precio
           && request.resource.data.pagado == resource.data.pagado
         );
@@ -69,7 +78,7 @@ service cloud.firestore {
       allow delete: if admin()
         || (
           autenticado()
-          && resource.data.clienteId == request.auth.uid
+          && (resource.data.clienteId == request.auth.uid || resource.data.authUid == request.auth.uid)
         );
     }
   }

@@ -152,13 +152,15 @@ export default function DashboardView({
                     } else {
                       setModalConfirm({ 
                         isOpen: true, 
-                        text: `¿Estás seguro de que quieres eliminar el pedido "${p.prenda}"?`, 
+                        text: esRechazado 
+                          ? `¿Deseas eliminar este pedido rechazado "${p.prenda}" de tu lista?` 
+                          : `¿Estás seguro de que quieres cancelar/eliminar la solicitud "${p.prenda}"?`, 
                         action: () => borrarPedidoDefinitivo(p.id) 
                       });
                     }
                   }} 
                   className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs p-1"
-                  title="Opciones de eliminación / archivo"
+                  title={esAdmin ? "Opciones de eliminación / archivo" : (esRechazado ? "Eliminar pedido rechazado" : "Cancelar / eliminar solicitud")}
                 >
                   ✕
                 </button>

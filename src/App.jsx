@@ -7,6 +7,7 @@ import { subirACloudinary } from './services/cloudinary';
 import { encolarFoto, iniciarProcesadorDeFotos, suscribirEstadoCola, sincronizarFotosManualmente } from './services/offlinePhotos';
 import { MEDIDAS_LISTA } from './constants/medidas';
 import { handleKeyDownEnter, generarIdPedido, parseNumero, formatearMoneda, validarTelefono } from './utils/helpers';
+import { buscarClienteCoincidente, sonNombresEquivalentes, coincidenTelefonos } from './utils/clienteMatcher';
 
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
@@ -92,6 +93,29 @@ export default function App() {
   const [avios, setAvios] = useState([]);
 
   const [calc, setCalc] = useState({ cm: 0, costoMetro: 0, avios: 0, horas: 0, valorHora: 0, margen: 0, precioPersonalizado: 0 });
+
+  const clienteActual = React.useMemo(() => {
+    if (!user) return null;
+    return buscarClienteCoincidente(clientes, {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      telefono: user.phoneNumber
+    });
+  }, [clientes, user]);
+
+  useEffect(() => {
+    if (user && clienteActual && !esAdmin) {
+      if (!clienteActual.authUid || !clienteActual.email) {
+        const actualizacion = {};
+        if (!clienteActual.authUid) actualizacion.authUid = user.uid;
+        if (!clienteActual.email && user.email) actualizacion.email = user.email;
+        setDoc(doc(db, "clientes", String(clienteActual.id)), actualizacion, { merge: true }).catch(err => {
+          console.warn("No se pudo autovincular authUid del cliente:", err);
+        });
+      }
+    }
+  }, [user, clienteActual, esAdmin]);
 
   const mostrarToast = (msg) => {
     setToastMessage(msg);
@@ -295,20 +319,19 @@ export default function App() {
         mostrarToast("Error de conexión al cargar avíos");
       });
     } else {
-      const userIdentifier = user.displayName || user.email;
-      if (userIdentifier) {
-        const qPedidos = query(collection(db, "pedidos"), where("clienteId", "==", user.uid));
-        unsubPedidos = onSnapshot(qPedidos, (snapshot) => {
-          const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-          setPedidos(list);
-        }, (err) => console.error("Error leyendo pedidos del cliente:", err));
+      unsubClientes = onSnapshot(collection(db, "clientes"), (snapshot) => {
+        const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        setClientes(list);
+      }, (err) => {
+        console.error("Error leyendo clientes:", err);
+      });
 
-        const qClientes = query(collection(db, "clientes"), where("id", "==", user.uid));
-        unsubClientes = onSnapshot(qClientes, (snapshot) => {
-          const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-          setClientes(list);
-        }, (err) => console.error("Error leyendo ficha del cliente:", err));
-      }
+      const qPedidos = query(collection(db, "pedidos"), where("clienteId", "==", user.uid));
+      unsubPedidos = onSnapshot(qPedidos, (snapshot) => {
+        const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        setPedidos(list);
+      }, (err) => console.error("Error leyendo pedidos del cliente:", err));
+
       setTelas([]);
       setAvios([]);
     }
@@ -455,13 +478,38 @@ export default function App() {
     setFormDirty(false);
 
     try {
+      const nuevoNombre = (fd.get('nombre') || '').trim();
+      const antiguoNombre = clienteSeleccionado.nombre;
       const medidas = {};
       MEDIDAS_LISTA.forEach(m => medidas[m] = fd.get(m));
-      const actualizado = { ...clienteSeleccionado, nombre: fd.get('nombre'), telefono, medidas };
+      const actualizado = { ...clienteSeleccionado, nombre: nuevoNombre, telefono, medidas };
       await setDoc(doc(db, "clientes", String(clienteSeleccionado.id)), actualizado);
       setClienteSeleccionado(actualizado);
+
+      // Sincronizar pedidos vinculados para que mantengan el nombre oficial editado por el admin
+      if (antiguoNombre && nuevoNombre && antiguoNombre !== nuevoNombre) {
+        const pedidosAActualizar = pedidos.filter(p => 
+          (p.clienteId && (p.clienteId === clienteSeleccionado.id || p.clienteId === clienteSeleccionado.authUid)) ||
+          (p.cliente && sonNombresEquivalentes(p.cliente, antiguoNombre)) ||
+          (p.telefono && coincidenTelefonos(p.telefono, clienteSeleccionado.telefono))
+        );
+
+        for (const ped of pedidosAActualizar) {
+          if (ped.cliente !== nuevoNombre) {
+            try {
+              await setDoc(doc(db, "pedidos", String(ped.id)), { 
+                ...ped,
+                cliente: nuevoNombre,
+                clienteId: ped.clienteId || clienteSeleccionado.authUid || clienteSeleccionado.id
+              }, { merge: true });
+            } catch (errPed) {
+              console.warn("No se pudo actualizar pedido:", ped.id, errPed);
+            }
+          }
+        }
+      }
       
-      mostrarToast("Cliente actualizado con éxito");
+      mostrarToast("Cliente y pedidos sincronizados con éxito");
       cambiarVista('detalle-cliente');
     } catch (err) {
       console.error("Error actualizar cliente:", err);
@@ -597,12 +645,7 @@ export default function App() {
     setIsSaving(true);
     try {
       const fd = new FormData(e.target);
-      const telefonoCliente = esAdmin ? '' : (fd.get('telefono') || '').trim();
-      if (!esAdmin && !validarTelefono(telefonoCliente)) {
-        mostrarToast("⚠️ El teléfono debe contener solo números (6 a 15 dígitos)");
-        setIsSaving(false);
-        return;
-      }
+      let telefonoCliente = esAdmin ? '' : (fd.get('telefono') || '').trim();
 
       const timestamp = Date.now();
       const id = generarIdPedido(pedidos, esAdmin);
@@ -614,12 +657,35 @@ export default function App() {
       let nombreCliente = '';
 
       if (esAdmin) {
-        clienteId = fd.get('clienteId');
-        const clienteObj = clientes.find(c => c.id === clienteId);
+        const clienteIdSeleccionado = fd.get('clienteId');
+        const clienteObj = clientes.find(c => c.id === clienteIdSeleccionado);
+        clienteId = clienteObj?.authUid || clienteIdSeleccionado || '';
         nombreCliente = clienteObj ? clienteObj.nombre : (fd.get('clienteNombre') || '');
       } else {
         clienteId = user?.uid || '';
-        nombreCliente = user?.displayName || user?.email || 'Cliente';
+        
+        // Detectar si el usuario ya tiene ficha registrada (ej: editada por el admin como "Agustina Lederos")
+        const clienteEncontrado = clienteActual || buscarClienteCoincidente(clientes, {
+          uid: user?.uid,
+          email: user?.email,
+          displayName: user?.displayName,
+          telefono: telefonoCliente
+        });
+
+        if (clienteEncontrado) {
+          nombreCliente = clienteEncontrado.nombre || user?.displayName || user?.email || 'Cliente';
+          if (!telefonoCliente && clienteEncontrado.telefono) {
+            telefonoCliente = clienteEncontrado.telefono;
+          }
+        } else {
+          nombreCliente = user?.displayName || user?.email || 'Cliente';
+        }
+
+        if (!telefonoCliente || !validarTelefono(telefonoCliente)) {
+          mostrarToast("⚠️ El teléfono debe contener solo números (6 a 15 dígitos)");
+          setIsSaving(false);
+          return;
+        }
       }
 
       const descripcionDetalle = esAdmin ? '' : (fd.get('descripcionDetalle') || '');
@@ -652,33 +718,36 @@ export default function App() {
       mostrarToast(esAdmin ? "¡Pedido creado con éxito!" : "¡Solicitud enviada con éxito!");
 
       if (!esAdmin) {
-        const nombreBuscado = nombreCliente.toLowerCase();
-        const telefonoBuscado = telefonoCliente.trim();
-
-        const clienteEncontrado = clientes.find(c => {
-          const coincideId = c.id === clienteId;
-          const coincideNombre = c.nombre && c.nombre.toLowerCase() === nombreBuscado;
-          const coincideTelefono = telefonoBuscado && c.telefono && c.telefono.trim() === telefonoBuscado;
-          return coincideId || coincideNombre || coincideTelefono;
+        const clienteEncontrado = clienteActual || buscarClienteCoincidente(clientes, {
+          uid: user?.uid,
+          email: user?.email,
+          displayName: user?.displayName,
+          telefono: telefonoCliente
         });
 
         if (!clienteEncontrado) {
-          const nuevoClienteId = clienteId || crypto.randomUUID();
+          const nuevoClienteId = user?.uid || crypto.randomUUID();
           const medidasVacias = {};
           MEDIDAS_LISTA.forEach(m => medidasVacias[m] = '');
           const fichaCliente = {
             id: nuevoClienteId,
+            authUid: user?.uid || '',
+            email: user?.email || '',
             nombre: nombreCliente,
-            telefono: telefonoBuscado,
+            telefono: telefonoCliente,
             medidas: medidasVacias
           };
           await setDoc(doc(db, "clientes", String(nuevoClienteId)), fichaCliente);
-        } else if (!clienteEncontrado.telefono && telefonoBuscado) {
-          const clienteActualizado = {
-            ...clienteEncontrado,
-            telefono: telefonoBuscado
-          };
-          await setDoc(doc(db, "clientes", String(clienteEncontrado.id)), clienteActualizado);
+        } else {
+          // Si ya existe la ficha, vinculamos authUid/email/telefono sin sobreescribir el nombre oficial
+          const actualizacion = {};
+          if (!clienteEncontrado.authUid && user?.uid) actualizacion.authUid = user.uid;
+          if (!clienteEncontrado.email && user?.email) actualizacion.email = user.email;
+          if (!clienteEncontrado.telefono && telefonoCliente) actualizacion.telefono = telefonoCliente;
+
+          if (Object.keys(actualizacion).length > 0) {
+            await setDoc(doc(db, "clientes", String(clienteEncontrado.id)), actualizacion, { merge: true });
+          }
         }
       }
 
@@ -749,12 +818,13 @@ export default function App() {
     try {
       const idDef = typeof idOrObj === 'object' && idOrObj !== null ? idOrObj.id : idOrObj;
       if (!idDef) return;
+
       await deleteDoc(doc(db, "pedidos", String(idDef)));
       if (pedidoSeleccionado?.id === idDef) {
         setPedidoSeleccionado(null);
       }
       cambiarVista('dashboard');
-      mostrarToast("Pedido eliminado definitivamente");
+      mostrarToast("Pedido eliminado correctamente");
     } catch (err) {
       console.error("Error borrar pedido:", err);
       mostrarToast("Error al borrar pedido");
@@ -925,10 +995,11 @@ export default function App() {
 
   const pedidosVisibles = pedidos.filter(p => {
     if (!esAdmin) {
-      const nombreUsuario = user?.displayName || user?.email;
+      const nombreUsuario = clienteActual?.nombre || user?.displayName || user?.email;
       const userUid = user?.uid;
-      const coincideUsuario = (p.clienteId && p.clienteId === userUid) || 
-        (p.cliente && nombreUsuario && p.cliente.toLowerCase() === nombreUsuario.toLowerCase());
+      const coincideUsuario = (p.clienteId && (p.clienteId === userUid || (clienteActual && (p.clienteId === clienteActual.id || p.clienteId === clienteActual.authUid)))) || 
+        (p.cliente && nombreUsuario && sonNombresEquivalentes(p.cliente, nombreUsuario)) ||
+        (p.telefono && clienteActual?.telefono && coincidenTelefonos(p.telefono, clienteActual.telefono));
       if (!coincideUsuario) return false;
     } else {
       if (p.estado === 'Pendiente de Aprobación') return false;
@@ -1193,6 +1264,7 @@ export default function App() {
               esAdmin={esAdmin}
               clientes={clientes}
               user={user}
+              clienteActual={clienteActual}
               telas={telas}
               cambiarVista={cambiarVista}
               isSaving={isSaving}

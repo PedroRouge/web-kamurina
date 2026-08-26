@@ -2,6 +2,7 @@ import React from 'react';
 import { doc, setDoc } from "firebase/firestore";
 import { db } from '../services/firebase';
 import { MEDIDAS_LISTA } from '../constants/medidas';
+import { sonNombresEquivalentes, coincidenTelefonos } from '../utils/clienteMatcher';
 
 export default function DetalleClienteView({
   clienteSeleccionado,
@@ -21,8 +22,9 @@ export default function DetalleClienteView({
   if (!clienteSeleccionado) return null;
 
   const pedidosDelCliente = pedidos.filter(p => 
-    (p.clienteId && p.clienteId === clienteSeleccionado.id) || 
-    (p.cliente && clienteSeleccionado.nombre && p.cliente.toLowerCase() === clienteSeleccionado.nombre.toLowerCase())
+    (p.clienteId && (p.clienteId === clienteSeleccionado.id || p.clienteId === clienteSeleccionado.authUid)) || 
+    (p.cliente && clienteSeleccionado.nombre && sonNombresEquivalentes(p.cliente, clienteSeleccionado.nombre)) ||
+    (p.telefono && clienteSeleccionado.telefono && coincidenTelefonos(p.telefono, clienteSeleccionado.telefono))
   );
 
   return (
