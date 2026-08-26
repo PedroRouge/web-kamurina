@@ -1286,7 +1286,7 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               setModalConfirm={setModalConfirm}
               ocultarPedidoDashboard={ocultarPedidoDashboard}
               restaurarPedidoDashboard={restaurarPedidoDashboard}
-              borrarPedidoDefinitivo={iniciarBorradoPedidoDefinitivo}
+              borrarPedidoDefinitivo={borrarPedidoDefinitivo} // <--- SOLUCIÓN
               actualizarEstado={actualizarEstado}
               setFotoAmpliada={setFotoAmpliada}
               setModalPago={setModalPago}
