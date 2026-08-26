@@ -18,7 +18,9 @@ export default function DetallePedidoView({
   eliminarPagoParcial,
   handleKeyDownEnter,
   setIsSaving,
-  subirOEncolarFoto
+  subirOEncolarFoto,
+  borrarPedidoDefinitivo,
+  ocultarPedidoDashboard
 }) {
   if (!pedidoSeleccionado) return null;
 
@@ -291,6 +293,60 @@ export default function DetallePedidoView({
           <button type="submit" className="bg-white text-stone-950 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold whitespace-nowrap hover:bg-stone-200 transition-colors">Agregar Foto</button>
         </form>
       )}
+
+      {/* Botón de eliminación / descarte del pedido */}
+      <div className="mt-8 pt-6 border-t border-stone-800 flex justify-between items-center">
+        <button
+          type="button"
+          onClick={() => cambiarVista('dashboard')}
+          className="text-stone-400 hover:text-white bg-stone-800/60 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors"
+        >
+          ← Volver al Dashboard
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (esAdmin) {
+              setModalConfirm({
+                isOpen: true,
+                text: `¿Qué deseas hacer con el pedido "${pedidoSeleccionado.prenda}" (${pedidoSeleccionado.id})?`,
+                buttons: [
+                  {
+                    text: "📦 Solo quitar del Dashboard (Queda en Historial del Cliente)",
+                    action: () => {
+                      if (ocultarPedidoDashboard) ocultarPedidoDashboard(pedidoSeleccionado.id);
+                      cambiarVista('dashboard', true);
+                    },
+                    style: "bg-stone-800 text-white hover:bg-stone-700 text-xs py-3"
+                  },
+                  {
+                    text: "🗑️ Eliminar definitivamente (Borrar de todo el sistema)",
+                    action: () => {
+                      if (borrarPedidoDefinitivo) borrarPedidoDefinitivo(pedidoSeleccionado.id);
+                    },
+                    style: "bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40 text-xs py-3"
+                  }
+                ]
+              });
+            } else {
+              setModalConfirm({
+                isOpen: true,
+                text: esRechazado
+                  ? `¿Deseas eliminar este pedido rechazado "${pedidoSeleccionado.prenda}" de tu lista?`
+                  : `¿Estás seguro de que quieres cancelar/eliminar la solicitud "${pedidoSeleccionado.prenda}"?`,
+                action: () => {
+                  if (borrarPedidoDefinitivo) borrarPedidoDefinitivo(pedidoSeleccionado.id);
+                }
+              });
+            }
+          }}
+          className="bg-red-950/30 hover:bg-red-900/40 text-red-400 border border-red-900/50 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
+          title={esAdmin ? "Eliminar o archivar pedido" : "Eliminar pedido"}
+        >
+          🗑️ {esRechazado ? "Eliminar Pedido Rechazado" : "Eliminar Pedido"}
+        </button>
+      </div>
     </div>
   );
 }

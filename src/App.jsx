@@ -78,6 +78,12 @@ export default function App() {
 
   const formRef = useRef(null);
   const [formDirty, setFormDirty] = useState(false);
+  const formDirtyRef = useRef(false);
+
+  const setFormDirtyState = (val) => {
+    formDirtyRef.current = Boolean(val);
+    setFormDirty(Boolean(val));
+  };
 
   const [fotoAmpliada, setFotoAmpliada] = useState(null);
   const [modalConfirm, setModalConfirm] = useState({ isOpen: false, text: '', action: null, buttons: null });
@@ -234,14 +240,29 @@ export default function App() {
 
       const targetVista = event.state?.vista || 'dashboard';
 
-      if ((vista === 'nuevo-cliente' || vista === 'editar-cliente') && formDirty) {
+      if ((vista === 'nuevo-cliente' || vista === 'editar-cliente') && formDirtyRef.current) {
         window.history.pushState({ vista }, ''); 
         setModalConfirm({
           isOpen: true,
           text: "⚠️ Tienes información sin guardar. ¿Qué deseas hacer?",
           buttons: [
-            { text: "Salir sin guardar", action: () => { setFormDirty(false); window.history.pushState({ vista: targetVista }, ''); setVista(targetVista); }, style: "bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40" },
-            { text: "Guardar ahora", action: () => { if(formRef.current) formRef.current.requestSubmit(); }, style: "bg-white text-stone-950 hover:bg-stone-200" }
+            { 
+              text: "Salir sin guardar", 
+              action: () => { 
+                formDirtyRef.current = false; 
+                setFormDirty(false); 
+                window.history.pushState({ vista: targetVista }, ''); 
+                setVista(targetVista); 
+              }, 
+              style: "bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40" 
+            },
+            { 
+              text: "Guardar ahora", 
+              action: () => { 
+                if (formRef.current) formRef.current.requestSubmit(); 
+              }, 
+              style: "bg-white text-stone-950 hover:bg-stone-200" 
+            }
           ]
         });
         return;
@@ -252,6 +273,7 @@ export default function App() {
       } else {
         setVista('dashboard');
       }
+      formDirtyRef.current = false;
       setFormDirty(false);
     };
 
@@ -259,23 +281,40 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [user, fotoAmpliada, modalConfirm.isOpen, modalRechazo.isOpen, modalPago.isOpen, modalAlias.isOpen, menuAbierto, vista, formDirty]);
 
-  const cambiarVista = (nuevaVista) => {
-    if ((vista === 'nuevo-cliente' || vista === 'editar-cliente') && formDirty) {
+  const cambiarVista = (nuevaVista, force = false) => {
+    if (!force && (vista === 'nuevo-cliente' || vista === 'editar-cliente') && formDirtyRef.current) {
       setModalConfirm({
         isOpen: true,
         text: "⚠️ Tienes información sin guardar. ¿Qué deseas hacer?",
         buttons: [
-          { text: "Salir sin guardar", action: () => { setFormDirty(false); window.history.pushState({ vista: nuevaVista }, ''); setVista(nuevaVista); setMenuAbierto(false); }, style: "bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40" },
-          { text: "Guardar ahora", action: () => { if(formRef.current) formRef.current.requestSubmit(); }, style: "bg-white text-stone-950 hover:bg-stone-200" }
+          { 
+            text: "Salir sin guardar", 
+            action: () => { 
+              formDirtyRef.current = false; 
+              setFormDirty(false); 
+              window.history.pushState({ vista: nuevaVista }, ''); 
+              setVista(nuevaVista); 
+              setMenuAbierto(false); 
+            }, 
+            style: "bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40" 
+          },
+          { 
+            text: "Guardar ahora", 
+            action: () => { 
+              if (formRef.current) formRef.current.requestSubmit(); 
+            }, 
+            style: "bg-white text-stone-950 hover:bg-stone-200" 
+          }
         ]
       });
       return;
     }
 
+    formDirtyRef.current = false;
+    setFormDirty(false);
     window.history.pushState({ vista: nuevaVista }, '');
     setVista(nuevaVista);
     setMenuAbierto(false);
-    setFormDirty(false);
   };
 
   useEffect(() => {
@@ -326,8 +365,7 @@ export default function App() {
         console.error("Error leyendo clientes:", err);
       });
 
-      const qPedidos = query(collection(db, "pedidos"), where("clienteId", "==", user.uid));
-      unsubPedidos = onSnapshot(qPedidos, (snapshot) => {
+      unsubPedidos = onSnapshot(collection(db, "pedidos"), (snapshot) => {
         const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         setPedidos(list);
       }, (err) => console.error("Error leyendo pedidos del cliente:", err));
@@ -446,6 +484,7 @@ export default function App() {
       return;
     }
     
+    formDirtyRef.current = false;
     setFormDirty(false);
     setIsSaving(true);
     
@@ -457,7 +496,7 @@ export default function App() {
       await setDoc(doc(db, "clientes", String(id)), nuevo);
       
       mostrarToast("Cliente guardado con éxito");
-      cambiarVista('clientes');
+      cambiarVista('clientes', true);
     } catch (err) {
       console.error("Error guardar cliente:", err);
       mostrarToast("Error al guardar cliente");
@@ -468,6 +507,7 @@ export default function App() {
 
   const actualizarCliente = async (e) => {
     e.preventDefault();
+    if (isSaving) return;
     const fd = new FormData(e.target);
     const telefono = (fd.get('telefono') || '').trim();
     if (!validarTelefono(telefono)) {
@@ -475,7 +515,9 @@ export default function App() {
       return;
     }
     
+    formDirtyRef.current = false;
     setFormDirty(false);
+    setIsSaving(true);
 
     try {
       const nuevoNombre = (fd.get('nombre') || '').trim();
@@ -510,10 +552,12 @@ export default function App() {
       }
       
       mostrarToast("Cliente y pedidos sincronizados con éxito");
-      cambiarVista('detalle-cliente');
+      cambiarVista('clientes', true);
     } catch (err) {
       console.error("Error actualizar cliente:", err);
       mostrarToast("Error al actualizar cliente");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -815,15 +859,18 @@ export default function App() {
   };
 
   const borrarPedidoDefinitivo = async (idOrObj) => {
-    try {
-      const idDef = typeof idOrObj === 'object' && idOrObj !== null ? idOrObj.id : idOrObj;
-      if (!idDef) return;
+    const idDef = typeof idOrObj === 'object' && idOrObj !== null ? idOrObj.id : idOrObj;
+    if (!idDef) return;
 
-      await deleteDoc(doc(db, "pedidos", String(idDef)));
+    try {
+      // Feedback visual optimista inmediato
+      setPedidos(prev => prev.filter(p => String(p.id) !== String(idDef)));
       if (pedidoSeleccionado?.id === idDef) {
         setPedidoSeleccionado(null);
       }
-      cambiarVista('dashboard');
+
+      await deleteDoc(doc(db, "pedidos", String(idDef)));
+      cambiarVista('dashboard', true);
       mostrarToast("Pedido eliminado correctamente");
     } catch (err) {
       console.error("Error borrar pedido:", err);
@@ -1254,6 +1301,8 @@ export default function App() {
               handleKeyDownEnter={handleKeyDownEnter}
               setIsSaving={setIsSaving}
               subirOEncolarFoto={subirOEncolarFoto}
+              borrarPedidoDefinitivo={iniciarBorradoPedidoDefinitivo}
+              ocultarPedidoDashboard={ocultarPedidoDashboard}
             />
           )}
 
@@ -1274,7 +1323,7 @@ export default function App() {
           {esAdmin && vista === 'nuevo-cliente' && (
             <NuevoClienteView 
               formRef={formRef}
-              setFormDirty={setFormDirty}
+              setFormDirty={setFormDirtyState}
               guardarCliente={guardarCliente}
               handleKeyDownEnter={handleKeyDownEnter}
               cambiarVista={cambiarVista}
@@ -1286,7 +1335,7 @@ export default function App() {
             <EditarClienteView 
               clienteSeleccionado={clienteSeleccionado}
               formRef={formRef}
-              setFormDirty={setFormDirty}
+              setFormDirty={setFormDirtyState}
               actualizarCliente={actualizarCliente}
               handleKeyDownEnter={handleKeyDownEnter}
               cambiarVista={cambiarVista}

@@ -27,7 +27,7 @@ export default function EditarClienteView({
       </div>
        
       <div className="flex gap-3 mt-4">
-        <button type="button" onClick={() => cambiarVista('detalle-cliente')} className="w-full bg-stone-800 text-white py-3 rounded-xl font-bold">Cancelar</button>
+        <button type="button" onClick={() => cambiarVista('clientes')} className="w-full bg-stone-800 text-white py-3 rounded-xl font-bold">Cancelar</button>
         <button type="submit" className="w-full bg-white text-stone-950 py-3 rounded-xl font-bold">Guardar Cambios</button>
       </div>
     </form>
