@@ -710,11 +710,24 @@ export default function App() {
       const pedido = pedidos.find(p => p.id === id);
       if (pedido) {
         await setDoc(doc(db, "pedidos", String(id)), { ...pedido, ocultoDashboard: true }, { merge: true });
-        mostrarToast("Pedido removido del dashboard");
+        mostrarToast("Pedido quitado del dashboard (conservado en el historial del cliente)");
       }
     } catch (err) {
       console.error("Error ocultar pedido:", err);
       mostrarToast("Error al ocultar pedido");
+    }
+  };
+
+  const restaurarPedidoDashboard = async (id) => {
+    try {
+      const pedido = pedidos.find(p => p.id === id);
+      if (pedido) {
+        await setDoc(doc(db, "pedidos", String(id)), { ...pedido, ocultoDashboard: false }, { merge: true });
+        mostrarToast("Pedido restaurado al dashboard");
+      }
+    } catch (err) {
+      console.error("Error restaurar pedido:", err);
+      mostrarToast("Error al restaurar pedido");
     }
   };
 
@@ -895,9 +908,8 @@ export default function App() {
   };
 
   const pedidosVisibles = pedidos.filter(p => {
-    if (p.ocultoDashboard) return false;
-    
     if (!esAdmin) {
+      if (p.ocultoDashboard) return false;
       const nombreUsuario = user?.displayName || user?.email;
       const userUid = user?.uid;
       const coincideUsuario = (p.clienteId && p.clienteId === userUid) || (p.cliente === nombreUsuario);
@@ -906,13 +918,12 @@ export default function App() {
       if (p.estado === 'Pendiente de Aprobación' || p.estado === 'Rechazado') return false;
     }
 
-    const coincideFiltro = filtroEstadoDashboard === 'TODOS' || p.estado === filtroEstadoDashboard;
     const textoBusqueda = busquedaDashboard.trim().toLowerCase();
     const coincideBusqueda = !textoBusqueda || 
       (p.cliente && p.cliente.toLowerCase().includes(textoBusqueda)) || 
       (p.prenda && p.prenda.toLowerCase().includes(textoBusqueda)) ||
       (p.id && p.id.toLowerCase().includes(textoBusqueda));
-    return coincideFiltro && coincideBusqueda;
+    return coincideBusqueda;
   }).sort((a, b) => {
     const timeA = Number(a.createdAt) || Number(a.id.replace('PED-', '')) || 0;
     const timeB = Number(b.createdAt) || Number(b.id.replace('PED-', '')) || 0;
@@ -1021,12 +1032,21 @@ export default function App() {
     });
   };
 
-  const iniciarBorradoPedidoDefinitivo = (pedido) => {
+  const iniciarBorradoPedidoDefinitivo = (pedidoOrId) => {
+    const pedido = typeof pedidoOrId === 'object' && pedidoOrId !== null
+      ? pedidoOrId 
+      : pedidos.find(p => p.id === pedidoOrId);
+
+    if (!pedido) {
+      if (typeof pedidoOrId === 'string') borrarPedidoDefinitivo(pedidoOrId);
+      return;
+    }
+
     const pagos = pedido.pagos || [];
     const totalAbonado = pagos.reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
-    let advertencia = `¿Estás segura de eliminar definitivamente el pedido "${pedido.prenda}" (${pedido.id})?`;
+    let advertencia = `¿Estás segura de eliminar definitivamente el pedido "${pedido.prenda || 'Sin prenda'}" (${pedido.id})?`;
     if (totalAbonado > 0) {
-      advertencia = `⚠️ Este pedido tiene ${formatearMoneda(totalAbonado)} abonados en pagos registrados. Al eliminarlo se perderá todo el historial contable de este trabajo. ¿Deseas continuar?`;
+      advertencia = `⚠️ Este pedido tiene ${formatearMoneda(totalAbonado)} abonados en pagos registrados. Al eliminarlo definitivamente se borrará de todo el sistema y del historial contable. ¿Deseas continuar?`;
     }
 
     setModalConfirm({
@@ -1112,6 +1132,7 @@ export default function App() {
               setPedidoSeleccionado={setPedidoSeleccionado}
               setModalConfirm={setModalConfirm}
               ocultarPedidoDashboard={ocultarPedidoDashboard}
+              restaurarPedidoDashboard={restaurarPedidoDashboard}
               borrarPedidoDefinitivo={iniciarBorradoPedidoDefinitivo}
               actualizarEstado={actualizarEstado}
               setFotoAmpliada={setFotoAmpliada}
@@ -1278,6 +1299,8 @@ export default function App() {
               borrarCliente={iniciarBorradoCliente}
               pedidos={pedidos}
               borrarPedidoDefinitivo={iniciarBorradoPedidoDefinitivo}
+              restaurarPedidoDashboard={restaurarPedidoDashboard}
+              ocultarPedidoDashboard={ocultarPedidoDashboard}
               setFotoAmpliada={setFotoAmpliada}
               setIsSaving={setIsSaving}
               mostrarToast={mostrarToast}

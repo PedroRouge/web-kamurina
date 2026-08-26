@@ -7,6 +7,7 @@ const ESTADOS_FILTRO = [
   { label: 'Listo para retirar', value: 'Listo para retirar en el taller' },
   { label: 'En camino', value: 'En camino (Envío a domicilio)' },
   { label: 'Entregado', value: 'Entregado con éxito' },
+  { label: '📦 Archivados / Ocultos', value: 'ARCHIVADOS' },
 ];
 
 export default function DashboardView({
@@ -21,6 +22,7 @@ export default function DashboardView({
   setPedidoSeleccionado,
   setModalConfirm,
   ocultarPedidoDashboard,
+  restaurarPedidoDashboard,
   borrarPedidoDefinitivo,
   actualizarEstado,
   setFotoAmpliada,
@@ -30,9 +32,13 @@ export default function DashboardView({
 }) {
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
 
-  const pedidosFiltrados = filtroEstado === 'TODOS'
-    ? pedidosVisibles
-    : pedidosVisibles.filter(p => p.estado === filtroEstado);
+  const pedidosFiltrados = pedidosVisibles.filter(p => {
+    if (filtroEstado === 'ARCHIVADOS') {
+      return Boolean(p.ocultoDashboard);
+    }
+    if (p.ocultoDashboard) return false;
+    return filtroEstado === 'TODOS' || p.estado === filtroEstado;
+  });
 
   return (
     <div>
@@ -92,7 +98,7 @@ export default function DashboardView({
               onClick={() => setFiltroEstado(value)}
               className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-all ${
                 filtroEstado === value
-                  ? 'bg-white text-stone-950 border-white'
+                  ? 'bg-white text-stone-950 border-white font-bold'
                   : 'bg-stone-900/60 text-stone-400 border-stone-700 hover:border-stone-500 hover:text-stone-200'
               }`}
             >
@@ -104,7 +110,9 @@ export default function DashboardView({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
         {pedidosFiltrados.length === 0 ? (
-          <p className="col-span-full text-stone-500 text-center py-10 italic">No hay pedidos con ese estado.</p>
+          <p className="col-span-full text-stone-500 text-center py-10 italic">
+            {filtroEstado === 'ARCHIVADOS' ? 'No hay pedidos ocultos o archivados.' : 'No hay pedidos con ese estado.'}
+          </p>
         ) : (
           pedidosFiltrados.map(p => {
             const gastos = p.gastos || 0;
@@ -123,21 +131,30 @@ export default function DashboardView({
                     if (esAdmin) {
                       setModalConfirm({ 
                         isOpen: true, 
-                        text: "¿Qué deseas hacer con este pedido?", 
+                        text: `¿Qué deseas hacer con el pedido "${p.prenda}" (${p.id})?`, 
                         buttons: [
-                          { text: "Solo quitar del Dashboard", action: () => ocultarPedidoDashboard(p.id), style: "bg-stone-800 text-white hover:bg-stone-700" },
-                          { text: "Eliminar definitivamente (Historial)", action: () => borrarPedidoDefinitivo(p.id), style: "bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40" }
+                          { 
+                            text: "📦 Solo quitar del Dashboard (Queda guardado en el Historial del Cliente)", 
+                            action: () => ocultarPedidoDashboard(p.id), 
+                            style: "bg-stone-800 text-white hover:bg-stone-700 text-xs py-3" 
+                          },
+                          { 
+                            text: "🗑️ Eliminar definitivamente (Borrar de todo el sistema)", 
+                            action: () => borrarPedidoDefinitivo(p), 
+                            style: "bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40 text-xs py-3" 
+                          }
                         ]
                       }); 
                     } else {
                       setModalConfirm({ 
                         isOpen: true, 
-                        text: "¿Estás seguro de que quieres eliminar esta solicitud de pedido?", 
-                        action: () => borrarPedidoDefinitivo(p.id) 
+                        text: `¿Estás seguro de que quieres eliminar la solicitud del pedido "${p.prenda}"?`, 
+                        action: () => borrarPedidoDefinitivo(p) 
                       });
                     }
                   }} 
-                  className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs"
+                  className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs p-1"
+                  title="Opciones de eliminación / archivo"
                 >
                   ✕
                 </button>
@@ -151,6 +168,23 @@ export default function DashboardView({
 
                 <h3 className="text-lg font-semibold">{esAdmin ? p.cliente : p.prenda}</h3>
                 {esAdmin && <p className="text-stone-400 text-sm mb-2">{p.prenda} {p.tela && `(${p.tela})`}</p>}
+
+                {p.ocultoDashboard && (
+                  <div className="mb-3 flex items-center justify-between bg-stone-950/80 border border-amber-900/40 px-3 py-2 rounded-xl text-xs">
+                    <span className="text-amber-300">📦 Archivado del Dashboard</span>
+                    {esAdmin && restaurarPedidoDashboard && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          restaurarPedidoDashboard(p.id);
+                        }}
+                        className="bg-white text-stone-950 font-bold px-2.5 py-1 rounded-lg text-[11px] hover:bg-stone-200 transition-colors"
+                      >
+                        Restaurar
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {esAdmin ? (
                   <div onClick={(e) => e.stopPropagation()} className="mb-2">

@@ -4,13 +4,14 @@ import { db } from '../services/firebase';
 import { MEDIDAS_LISTA } from '../constants/medidas';
 
 export default function DetalleClienteView({
-
   clienteSeleccionado,
   cambiarVista,
   setModalConfirm,
   borrarCliente,
   pedidos,
   borrarPedidoDefinitivo,
+  restaurarPedidoDashboard,
+  ocultarPedidoDashboard,
   setFotoAmpliada,
   setIsSaving,
   mostrarToast,
@@ -61,15 +62,48 @@ export default function DetalleClienteView({
               return (
                 <div key={p.id} className={`bg-stone-950/40 border p-4 rounded-2xl flex flex-col gap-3 relative ${esRechazado ? 'border-red-900/50' : 'border-stone-800'}`}>
                   <button 
-                    onClick={() => setModalConfirm({ isOpen: true, text: "¿Estás segura de que quieres eliminar definitivamente este pedido?", action: () => borrarPedidoDefinitivo(p.id) })} 
-                    className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs"
+                    onClick={() => borrarPedidoDefinitivo(p)} 
+                    className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs p-1"
+                    title="Eliminar definitivamente"
                   >
                     ✕
                   </button>
                    
-                  <div className="flex justify-between items-center pr-6">
-                    <span className="text-xs font-bold">{p.prenda} (<span className={esRechazado ? "text-red-400" : ""}>{p.estado}</span>)</span>
-                    <span className="text-xs text-stone-400">{p.entrega}</span>
+                  <div className="flex flex-wrap justify-between items-center pr-6 gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold">{p.prenda} (<span className={esRechazado ? "text-red-400" : ""}>{p.estado}</span>)</span>
+                      {p.ocultoDashboard ? (
+                        <span className="text-[10px] bg-stone-800 text-amber-300 px-2 py-0.5 rounded border border-amber-900/40">
+                          📦 Archivado del Dashboard
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-emerald-950/60 text-emerald-300 px-2 py-0.5 rounded border border-emerald-900/40">
+                          🟢 Visible en Dashboard
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {p.ocultoDashboard ? (
+                        <button
+                          type="button"
+                          onClick={() => restaurarPedidoDashboard && restaurarPedidoDashboard(p.id)}
+                          className="text-[10px] font-bold bg-white text-stone-950 px-2.5 py-1 rounded-lg hover:bg-stone-200 transition-colors"
+                          title="Volver a mostrar en el Dashboard"
+                        >
+                          ↩️ Mostrar en Dashboard
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => ocultarPedidoDashboard && ocultarPedidoDashboard(p.id)}
+                          className="text-[10px] text-stone-400 hover:text-stone-200 bg-stone-900 px-2.5 py-1 rounded-lg border border-stone-800 transition-colors"
+                          title="Quitar solo del Dashboard (Conservar en este historial)"
+                        >
+                          📦 Quitar del Dashboard
+                        </button>
+                      )}
+                      <span className="text-xs text-stone-400">{p.entrega}</span>
+                    </div>
                   </div>
 
                   {p.descripcionDetalle && (
