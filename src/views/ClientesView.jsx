@@ -27,7 +27,7 @@ export default function ClientesView({
               <button 
                 onClick={(e) => { 
                   e.stopPropagation(); 
-                  setModalConfirm({ isOpen: true, text: "¿Estás segura de que quieres eliminar este cliente?", action: () => borrarCliente(c.id) }); 
+                  borrarCliente(c); 
                 }} 
                 className="absolute top-4 right-4 text-stone-600 hover:text-red-400"
               >
