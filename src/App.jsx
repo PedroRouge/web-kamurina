@@ -4,9 +4,9 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithP
 
 import { db, auth, googleProvider } from './services/firebase';
 import { subirACloudinary } from './services/cloudinary';
-import { encolarFoto, iniciarProcesadorDeFotos } from './services/offlinePhotos';
+import { encolarFoto, iniciarProcesadorDeFotos, suscribirEstadoCola, sincronizarFotosManualmente } from './services/offlinePhotos';
 import { MEDIDAS_LISTA } from './constants/medidas';
-import { handleKeyDownEnter, generarIdPedido } from './utils/helpers';
+import { handleKeyDownEnter, generarIdPedido, parseNumero, formatearMoneda, validarTelefono } from './utils/helpers';
 
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
@@ -73,6 +73,7 @@ export default function App() {
   
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+  const [fotosPendientesCount, setFotosPendientesCount] = useState(0);
 
   const formRef = useRef(null);
   const [formDirty, setFormDirty] = useState(false);
@@ -115,7 +116,16 @@ export default function App() {
     }
   };
 
-  useEffect(() => iniciarProcesadorDeFotos(), []);
+  useEffect(() => {
+    const unsubCola = suscribirEstadoCola((cant) => setFotosPendientesCount(cant));
+    const unsubProcesador = iniciarProcesadorDeFotos((cant) => {
+      mostrarToast(`¡${cant} foto(s) sincronizada(s) con la nube!`);
+    });
+    return () => {
+      unsubCola();
+      unsubProcesador();
+    };
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -242,22 +252,34 @@ export default function App() {
       unsubClientes = onSnapshot(collection(db, "clientes"), (snapshot) => {
         const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         setClientes(list);
-      }, (err) => console.error("Error leyendo clientes:", err));
+      }, (err) => {
+        console.error("Error leyendo clientes:", err);
+        mostrarToast("Error de conexión al cargar clientes");
+      });
 
       unsubPedidos = onSnapshot(collection(db, "pedidos"), (snapshot) => {
         const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         setPedidos(list);
-      }, (err) => console.error("Error leyendo pedidos:", err));
+      }, (err) => {
+        console.error("Error leyendo pedidos:", err);
+        mostrarToast("Error de conexión al cargar pedidos");
+      });
 
       unsubTelas = onSnapshot(collection(db, "telas"), (snapshot) => {
         const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         setTelas(list);
-      }, (err) => console.error("Error leyendo telas:", err));
+      }, (err) => {
+        console.error("Error leyendo telas:", err);
+        mostrarToast("Error de conexión al cargar telas");
+      });
 
       unsubAvios = onSnapshot(collection(db, "avios"), (snapshot) => {
         const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         setAvios(list);
-      }, (err) => console.error("Error leyendo avios:", err));
+      }, (err) => {
+        console.error("Error leyendo avios:", err);
+        mostrarToast("Error de conexión al cargar avíos");
+      });
     } else {
       const userIdentifier = user.displayName || user.email;
       if (userIdentifier) {
@@ -285,19 +307,27 @@ export default function App() {
     };
   }, [user, esAdmin, loadingRol]);
 
-  const metrosCalculados = calc.cm / 100;
-  const materiales = (metrosCalculados * calc.costoMetro) + calc.avios;
-  const manoObra = calc.horas * calc.valorHora;
+  const metrosCalculados = parseNumero(calc.cm, 0) / 100;
+  const costoMetroSanitizado = parseNumero(calc.costoMetro, 0);
+  const aviosSanitizados = parseNumero(calc.avios, 0);
+  const horasSanitizadas = parseNumero(calc.horas, 0);
+  const valorHoraSanitizado = parseNumero(calc.valorHora, 0);
+  const margenSanitizado = parseNumero(calc.margen, 0);
+  const precioPersonalizadoSanitizado = parseNumero(calc.precioPersonalizado, 0);
+
+  const materiales = (metrosCalculados * costoMetroSanitizado) + aviosSanitizados;
+  const manoObra = horasSanitizadas * valorHoraSanitizado;
   const costoTotal = materiales + manoObra;
-  const calculoNormal = costoTotal * (1 + calc.margen / 100);
-  const precioFinal = calc.precioPersonalizado > 0 ? calc.precioPersonalizado : calculoNormal;
+  const calculoNormal = costoTotal * (1 + margenSanitizado / 100);
+  const precioFinal = precioPersonalizadoSanitizado > 0 ? precioPersonalizadoSanitizado : calculoNormal;
   const gananciaNeta = manoObra + (precioFinal - costoTotal);
 
   const borrarCliente = async (id) => {
     try {
       const clienteABorrar = clientes.find(c => c.id === id);
       if (clienteABorrar) {
-        const pedidosDelCliente = pedidos.filter(p => (p.clienteId && p.clienteId === id) || (p.cliente && p.cliente.toLowerCase() === clienteABorrar.nombre.toLowerCase()));
+        const nombreCliente = clienteABorrar.nombre ? clienteABorrar.nombre.toLowerCase() : '';
+        const pedidosDelCliente = pedidos.filter(p => (p.clienteId && p.clienteId === id) || (p.cliente && p.cliente.toLowerCase() === nombreCliente));
         const promesasDeBorrado = pedidosDelCliente.map(p => deleteDoc(doc(db, "pedidos", String(p.id))));
         await Promise.all(promesasDeBorrado);
       }
@@ -305,6 +335,7 @@ export default function App() {
       if (clienteSeleccionado?.id === id) cambiarVista('clientes');
       mostrarToast("Cliente eliminado con éxito");
     } catch (err) {
+      console.error("Error al borrar cliente:", err);
       mostrarToast("Error al eliminar cliente");
     }
   };
@@ -315,6 +346,7 @@ export default function App() {
       if (telaSeleccionada?.id === id) cambiarVista('catalogo');
       mostrarToast("Tela eliminada con éxito");
     } catch (err) {
+      console.error("Error al borrar tela:", err);
       mostrarToast("Error al eliminar tela");
     }
   };
@@ -325,6 +357,7 @@ export default function App() {
       if (avioSeleccionado?.id === id) cambiarVista('catalogo-avios');
       mostrarToast("Avío eliminado con éxito");
     } catch (err) {
+      console.error("Error al borrar avío:", err);
       mostrarToast("Error al eliminar avío");
     }
   };
@@ -333,10 +366,11 @@ export default function App() {
     try {
       const tela = telas.find(t => t.id === id);
       if (tela) {
-        await setDoc(doc(db, "telas", String(id)), { ...tela, stock: nuevoStock }, { merge: true });
+        await setDoc(doc(db, "telas", String(id)), { ...tela, stock: String(nuevoStock) }, { merge: true });
       }
     } catch (err) {
       console.error("Error stock:", err);
+      mostrarToast("Error al actualizar stock");
     }
   };
 
@@ -344,10 +378,11 @@ export default function App() {
     try {
       const avio = avios.find(a => a.id === id);
       if (avio) {
-        await setDoc(doc(db, "avios", String(id)), { ...avio, cantidad: nuevaCantidad }, { merge: true });
+        await setDoc(doc(db, "avios", String(id)), { ...avio, cantidad: String(nuevaCantidad) }, { merge: true });
       }
     } catch (err) {
       console.error("Error cantidad avio:", err);
+      mostrarToast("Error al actualizar cantidad");
     }
   };
 
@@ -355,10 +390,12 @@ export default function App() {
     try {
       const avio = avios.find(a => a.id === id);
       if (avio) {
-        await setDoc(doc(db, "avios", String(id)), { ...avio, precio: Number(nuevoPrecio) || 0 }, { merge: true });
+        const precioSanitizado = parseNumero(nuevoPrecio, 0);
+        await setDoc(doc(db, "avios", String(id)), { ...avio, precio: precioSanitizado }, { merge: true });
       }
     } catch (err) {
       console.error("Error precio avio:", err);
+      mostrarToast("Error al actualizar precio");
     }
   };
 
@@ -366,8 +403,8 @@ export default function App() {
     e.preventDefault();
     if (isSaving) return;
     const fd = new FormData(e.target);
-    const telefono = fd.get('telefono').trim();
-    if (!/^\d{6,15}$/.test(telefono)) {
+    const telefono = (fd.get('telefono') || '').trim();
+    if (!validarTelefono(telefono)) {
       mostrarToast("⚠️ El teléfono debe contener solo números (6 a 15 dígitos)");
       return;
     }
@@ -385,6 +422,7 @@ export default function App() {
       mostrarToast("Cliente guardado con éxito");
       cambiarVista('clientes');
     } catch (err) {
+      console.error("Error guardar cliente:", err);
       mostrarToast("Error al guardar cliente");
     } finally {
       setIsSaving(false);
@@ -394,8 +432,8 @@ export default function App() {
   const actualizarCliente = async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    const telefono = fd.get('telefono').trim();
-    if (!/^\d{6,15}$/.test(telefono)) {
+    const telefono = (fd.get('telefono') || '').trim();
+    if (!validarTelefono(telefono)) {
       mostrarToast("⚠️ El teléfono debe contener solo números (6 a 15 dígitos)");
       return;
     }
@@ -412,6 +450,7 @@ export default function App() {
       mostrarToast("Cliente actualizado con éxito");
       cambiarVista('detalle-cliente');
     } catch (err) {
+      console.error("Error actualizar cliente:", err);
       mostrarToast("Error al actualizar cliente");
     }
   };
@@ -421,12 +460,7 @@ export default function App() {
     if (isSaving) return;
     setIsSaving(true);
     const fd = new FormData(e.target);
-    const precio = Number(fd.get('precio'));
-    if (precio < 0) {
-      mostrarToast("⚠️ El precio no puede ser negativo");
-      setIsSaving(false);
-      return;
-    }
+    const precio = parseNumero(fd.get('precio'), 0);
     try {
       const archivoFoto = fd.get('fotoArchivo');
       const id = crypto.randomUUID();
@@ -437,13 +471,14 @@ export default function App() {
         descripcion: fd.get('desc'), 
         uso: fd.get('uso'), 
         stock: fd.get('stock'), 
-        precio: precio || 0,
+        precio: precio,
         foto: urlFoto 
       };
       await setDoc(doc(db, "telas", String(id)), nueva);
       mostrarToast("Tela guardada con éxito");
       cambiarVista('catalogo');
     } catch (err) {
+      console.error("Error guardar tela:", err);
       mostrarToast("Error al guardar tela");
     } finally {
       setIsSaving(false);
@@ -455,12 +490,7 @@ export default function App() {
     if (isSaving) return;
     setIsSaving(true);
     const fd = new FormData(e.target);
-    const precio = Number(fd.get('precio'));
-    if (precio < 0) {
-      mostrarToast("⚠️ El precio no puede ser negativo");
-      setIsSaving(false);
-      return;
-    }
+    const precio = parseNumero(fd.get('precio'), 0);
     try {
       const archivoFoto = fd.get('fotoArchivo');
       const urlFoto = await subirOEncolarFoto(archivoFoto, { coleccion: 'telas', documentoId: telaSeleccionada.id });
@@ -471,7 +501,7 @@ export default function App() {
         descripcion: fd.get('desc'), 
         uso: fd.get('uso'), 
         stock: fd.get('stock'), 
-        precio: precio || 0,
+        precio: precio,
         foto: urlFoto || telaSeleccionada.foto
       };
       await setDoc(doc(db, "telas", String(telaSeleccionada.id)), actualizada);
@@ -479,6 +509,7 @@ export default function App() {
       mostrarToast("Tela actualizada con éxito");
       cambiarVista('detalle-tela');
     } catch (err) {
+      console.error("Error actualizar tela:", err);
       mostrarToast("Error al actualizar tela");
     } finally {
       setIsSaving(false);
@@ -490,12 +521,7 @@ export default function App() {
     if (isSaving) return;
     setIsSaving(true);
     const fd = new FormData(e.target);
-    const precio = Number(fd.get('precio'));
-    if (precio < 0) {
-      mostrarToast("⚠️ El precio no puede ser negativo");
-      setIsSaving(false);
-      return;
-    }
+    const precio = parseNumero(fd.get('precio'), 0);
     try {
       const archivoFoto = fd.get('fotoArchivo');
       const id = crypto.randomUUID();
@@ -506,13 +532,14 @@ export default function App() {
         tipo: fd.get('tipo'), 
         centimetros: fd.get('centimetros'), 
         cantidad: fd.get('cantidad'), 
-        precio: precio || 0,
+        precio: precio,
         foto: urlFoto 
       };
       await setDoc(doc(db, "avios", String(id)), nuevo);
       mostrarToast("Avío guardado con éxito");
       cambiarVista('catalogo-avios');
     } catch (err) {
+      console.error("Error guardar avio:", err);
       mostrarToast("Error al guardar avío");
     } finally {
       setIsSaving(false);
@@ -524,12 +551,7 @@ export default function App() {
     if (isSaving) return;
     setIsSaving(true);
     const fd = new FormData(e.target);
-    const precio = Number(fd.get('precio'));
-    if (precio < 0) {
-      mostrarToast("⚠️ El precio no puede ser negativo");
-      setIsSaving(false);
-      return;
-    }
+    const precio = parseNumero(fd.get('precio'), 0);
     try {
       const archivoFoto = fd.get('fotoArchivo');
       const urlFoto = await subirOEncolarFoto(archivoFoto, { coleccion: 'avios', documentoId: avioSeleccionado.id });
@@ -540,7 +562,7 @@ export default function App() {
         tipo: fd.get('tipo'), 
         centimetros: fd.get('centimetros'), 
         cantidad: fd.get('cantidad'), 
-        precio: precio || 0,
+        precio: precio,
         foto: urlFoto || avioSeleccionado.foto
       };
       await setDoc(doc(db, "avios", String(avioSeleccionado.id)), actualizado);
@@ -548,6 +570,7 @@ export default function App() {
       mostrarToast("Avío actualizado con éxito");
       cambiarVista('detalle-avio');
     } catch (err) {
+      console.error("Error actualizar avio:", err);
       mostrarToast("Error al actualizar avío");
     } finally {
       setIsSaving(false);
@@ -561,7 +584,7 @@ export default function App() {
     try {
       const fd = new FormData(e.target);
       const telefonoCliente = esAdmin ? '' : (fd.get('telefono') || '').trim();
-      if (!esAdmin && !/^\d{6,15}$/.test(telefonoCliente)) {
+      if (!esAdmin && !validarTelefono(telefonoCliente)) {
         mostrarToast("⚠️ El teléfono debe contener solo números (6 a 15 dígitos)");
         setIsSaving(false);
         return;
@@ -647,6 +670,7 @@ export default function App() {
 
       cambiarVista('dashboard');
     } catch (err) {
+      console.error("Error crear pedido:", err);
       mostrarToast("Error al crear pedido");
     } finally {
       setIsSaving(false);
@@ -666,16 +690,17 @@ export default function App() {
       if (pedido) {
         const actualizado = { 
           ...pedido, 
-          precio: precioFinal,
-          materialesCosto: materiales,
-          manoObraCosto: manoObra,
-          gastos: materiales
+          precio: parseNumero(precioFinal, 0),
+          materialesCosto: parseNumero(materiales, 0),
+          manoObraCosto: parseNumero(manoObra, 0),
+          gastos: parseNumero(materiales, 0)
         };
         await setDoc(doc(db, "pedidos", String(pedidoId)), actualizado, { merge: true });
         mostrarToast("Precio asignado correctamente");
       }
       cambiarVista('dashboard');
     } catch (err) {
+      console.error("Error asignar precio:", err);
       mostrarToast("Error al asignar precio");
     }
   };
@@ -688,7 +713,8 @@ export default function App() {
         mostrarToast("Pedido removido del dashboard");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error ocultar pedido:", err);
+      mostrarToast("Error al ocultar pedido");
     }
   };
 
@@ -701,6 +727,7 @@ export default function App() {
       cambiarVista('dashboard');
       mostrarToast("Pedido eliminado definitivamente");
     } catch (err) {
+      console.error("Error borrar pedido:", err);
       mostrarToast("Error al borrar pedido");
     }
   };
@@ -716,7 +743,8 @@ export default function App() {
         mostrarToast("Estado actualizado");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error actualizar estado:", err);
+      mostrarToast("Error al actualizar estado");
     }
   };
 
@@ -728,13 +756,14 @@ export default function App() {
         mostrarToast("Solicitud aceptada");
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error aceptar solicitud:", err);
+      mostrarToast("Error al aceptar solicitud");
     }
   };
 
   const registrarPagoParcial = async () => {
     if (!modalPago.pedidoId) return;
-    const monto = Number(montoPagoInput);
+    const monto = parseNumero(montoPagoInput, 0);
     if (!monto || monto <= 0) {
       mostrarToast("⚠️ Ingresa un monto válido mayor a 0");
       return;
@@ -744,12 +773,12 @@ export default function App() {
     if (!pedido) return;
 
     const pagosActuales = pedido.pagos || [];
-    const totalAbonadoPrevio = pagosActuales.reduce((acc, curr) => acc + curr.monto, 0);
-    const precioTotal = pedido.precio || 0;
+    const totalAbonadoPrevio = pagosActuales.reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
+    const precioTotal = parseNumero(pedido.precio, 0);
     const saldoPendiente = Math.max(0, precioTotal - totalAbonadoPrevio);
 
-    if (monto > saldoPendiente) {
-      mostrarToast(`⚠️ El monto excede el saldo pendiente ($${saldoPendiente.toLocaleString()})`);
+    if (monto > saldoPendiente && saldoPendiente > 0) {
+      mostrarToast(`⚠️ El monto excede el saldo pendiente (${formatearMoneda(saldoPendiente)})`);
       return;
     }
 
@@ -757,11 +786,11 @@ export default function App() {
       const nuevoPago = {
         id: crypto.randomUUID(),
         monto,
-        metodo: metodoPagoInput,
-        fecha: new Date().toLocaleDateString()
+        metodo: metodoPagoInput || 'Efectivo',
+        fecha: new Date().toLocaleDateString('es-AR')
       };
       const listaActualizada = [...pagosActuales, nuevoPago];
-      const totalAbonado = listaActualizada.reduce((acc, curr) => acc + curr.monto, 0);
+      const totalAbonado = listaActualizada.reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
       const estaPagado = precioTotal > 0 && totalAbonado >= precioTotal;
 
       const actualizado = {
@@ -778,6 +807,7 @@ export default function App() {
       setMontoPagoInput('');
       mostrarToast("Pago registrado con éxito");
     } catch (err) {
+      console.error("Error registrar pago:", err);
       mostrarToast("Error al registrar pago");
     }
   };
@@ -787,8 +817,9 @@ export default function App() {
     try {
       const pagosActuales = pedidoSeleccionado.pagos || [];
       const listaActualizada = pagosActuales.filter(p => p.id !== pagoId);
-      const totalAbonado = listaActualizada.reduce((acc, curr) => acc + curr.monto, 0);
-      const estaPagado = pedidoSeleccionado.precio > 0 && totalAbonado >= pedidoSeleccionado.precio;
+      const totalAbonado = listaActualizada.reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
+      const precioTotal = parseNumero(pedidoSeleccionado.precio, 0);
+      const estaPagado = precioTotal > 0 && totalAbonado >= precioTotal;
 
       const actualizado = {
         ...pedidoSeleccionado,
@@ -800,6 +831,7 @@ export default function App() {
       setPedidoSeleccionado(actualizado);
       mostrarToast("Pago eliminado");
     } catch (err) {
+      console.error("Error eliminar pago:", err);
       mostrarToast("Error al eliminar pago");
     }
   };
@@ -819,6 +851,7 @@ export default function App() {
       setModalRechazo({ isOpen: false, pedidoId: null, motivo: '' });
       mostrarToast("Pedido rechazado");
     } catch (err) {
+      console.error("Error rechazar pedido:", err);
       mostrarToast("Error al rechazar pedido");
     }
   };
@@ -903,8 +936,8 @@ export default function App() {
 
   const totalPedidosActivos = pedidos.filter(p => !p.ocultoDashboard && p.estado !== 'Rechazado' && p.estado !== 'Pendiente de Aprobación' && p.estado !== 'Entregado con éxito').length;
   const ingresosDelMes = pedidos.reduce((acc, p) => {
-    if (p.ocultoDashboard || !p.precio || p.precio <= 0) return acc;
-    const sumaPagos = (p.pagos || []).reduce((sub, pay) => sub + pay.monto, 0);
+    if (p.ocultoDashboard || !p.precio || parseNumero(p.precio, 0) <= 0) return acc;
+    const sumaPagos = (p.pagos || []).reduce((sub, pay) => sub + parseNumero(pay.monto, 0), 0);
     return acc + (sumaPagos > 0 ? sumaPagos : 0);
   }, 0);
 
@@ -930,20 +963,78 @@ export default function App() {
   });
 
   const gananciasPorMes = pedidos.reduce((acc, p) => {
-    if (p.precio <= 0) return acc;
+    const precio = parseNumero(p.precio, 0);
+    if (precio <= 0) return acc;
     const mesAnio = p.entrega ? p.entrega.slice(0, 7) : new Date(p.createdAt || Date.now()).toISOString().slice(0, 7);
-    const gastos = p.gastos || 0;
-    const gananciaPedido = p.precio - gastos;
+    const gastos = parseNumero(p.gastos, 0);
+    const gananciaPedido = precio - gastos;
     
     if (!acc[mesAnio]) {
       acc[mesAnio] = { ingresos: 0, ganancia: 0, cantidad: 0, pedidos: [] };
     }
-    acc[mesAnio].ingresos += p.precio;
+    acc[mesAnio].ingresos += precio;
     acc[mesAnio].ganancia += gananciaPedido;
     acc[mesAnio].cantidad += 1;
-    acc[mesAnio].pedidos.push({ ...p, gananciaPedido });
+    acc[mesAnio].pedidos.push({ ...p, precio, gastos, gananciaPedido });
     return acc;
   }, {});
+
+  const saldoPendienteModalPago = (() => {
+    if (!modalPago.isOpen || !modalPago.pedidoId) return 0;
+    const p = pedidos.find(item => item.id === modalPago.pedidoId);
+    if (!p) return 0;
+    const precioTotal = parseNumero(p.precio, 0);
+    const totalAbonado = (p.pagos || []).reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
+    return Math.max(0, precioTotal - totalAbonado);
+  })();
+
+  const iniciarBorradoCliente = (cliente) => {
+    const nombreCliente = cliente.nombre ? cliente.nombre.toLowerCase() : '';
+    const pedidosCliente = pedidos.filter(p => (p.clienteId && p.clienteId === cliente.id) || (p.cliente && p.cliente.toLowerCase() === nombreCliente));
+    const pedidosActivos = pedidosCliente.filter(p => p.estado !== 'Entregado con éxito' && p.estado !== 'Rechazado');
+
+    let advertencia = `¿Estás segura de que deseas eliminar al cliente "${cliente.nombre}"?`;
+    if (pedidosActivos.length > 0) {
+      advertencia = `⚠️ Atención: Este cliente tiene ${pedidosActivos.length} pedido(s) en curso (en taller / confección / pendientes). Al eliminarlo se borrarán también todos sus pedidos e historiales asociados. ¿Deseas continuar?`;
+    } else if (pedidosCliente.length > 0) {
+      advertencia = `Este cliente tiene ${pedidosCliente.length} pedido(s) archivados/entregados. Al eliminarlo se borrarán también dichos pedidos. ¿Deseas continuar?`;
+    }
+
+    setModalConfirm({
+      isOpen: true,
+      text: advertencia,
+      action: () => borrarCliente(cliente.id)
+    });
+  };
+
+  const iniciarBorradoTela = (tela) => {
+    const pedidosConEstaTela = pedidos.filter(p => p.tela && p.tela.toLowerCase() === (tela.nombre || '').toLowerCase() && p.estado !== 'Entregado con éxito' && p.estado !== 'Rechazado');
+    let advertencia = `¿Estás segura de que quieres eliminar la tela "${tela.nombre}" del catálogo?`;
+    if (pedidosConEstaTela.length > 0) {
+      advertencia = `⚠️ La tela "${tela.nombre}" está asignada a ${pedidosConEstaTela.length} pedido(s) activo(s). Los pedidos conservarán el nombre de la tela como texto histórico. ¿Deseas eliminarla del catálogo?`;
+    }
+
+    setModalConfirm({
+      isOpen: true,
+      text: advertencia,
+      action: () => borrarTela(tela.id)
+    });
+  };
+
+  const iniciarBorradoPedidoDefinitivo = (pedido) => {
+    const pagos = pedido.pagos || [];
+    const totalAbonado = pagos.reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
+    let advertencia = `¿Estás segura de eliminar definitivamente el pedido "${pedido.prenda}" (${pedido.id})?`;
+    if (totalAbonado > 0) {
+      advertencia = `⚠️ Este pedido tiene ${formatearMoneda(totalAbonado)} abonados en pagos registrados. Al eliminarlo se perderá todo el historial contable de este trabajo. ¿Deseas continuar?`;
+    }
+
+    setModalConfirm({
+      isOpen: true,
+      text: advertencia,
+      action: () => borrarPedidoDefinitivo(pedido.id)
+    });
+  };
 
   if (authLoading || loadingRol) {
     return <div className="min-h-screen bg-stone-950 flex justify-center items-center text-stone-400">Cargando aplicación...</div>;
@@ -975,6 +1066,27 @@ export default function App() {
       <Toast message={toastMessage} />
       <LoadingOverlay isSaving={isSaving} />
 
+      {fotosPendientesCount > 0 && (
+        <div className="relative z-20 max-w-6xl mx-auto mb-4 bg-amber-950/70 border border-amber-800/80 p-3 rounded-2xl flex items-center justify-between text-xs text-amber-200 backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <span>📷</span>
+            <span>Tienes <strong>{fotosPendientesCount}</strong> foto(s) guardada(s) localmente en cola. Se subirán automáticamente al recuperar conexión.</span>
+          </div>
+          {navigator.onLine && (
+            <button 
+              onClick={async () => {
+                mostrarToast("Sincronizando fotos pendientes...");
+                const total = await sincronizarFotosManualmente();
+                if (total > 0) mostrarToast(`¡${total} foto(s) sincronizada(s) con éxito!`);
+              }}
+              className="bg-amber-400 text-stone-950 font-bold px-3 py-1.5 rounded-xl hover:bg-amber-300 transition-colors whitespace-nowrap ml-2"
+            >
+              Subir ahora
+            </button>
+          )}
+        </div>
+      )}
+
       <Navbar 
         esAdmin={esAdmin}
         vista={vista}
@@ -1000,7 +1112,7 @@ export default function App() {
               setPedidoSeleccionado={setPedidoSeleccionado}
               setModalConfirm={setModalConfirm}
               ocultarPedidoDashboard={ocultarPedidoDashboard}
-              borrarPedidoDefinitivo={borrarPedidoDefinitivo}
+              borrarPedidoDefinitivo={iniciarBorradoPedidoDefinitivo}
               actualizarEstado={actualizarEstado}
               setFotoAmpliada={setFotoAmpliada}
               setModalPago={setModalPago}
@@ -1114,7 +1226,7 @@ export default function App() {
               setTelaSeleccionada={setTelaSeleccionada}
               cambiarVista={cambiarVista}
               setModalConfirm={setModalConfirm}
-              borrarTela={borrarTela}
+              borrarTela={iniciarBorradoTela}
               actualizarStock={actualizarStock}
             />
           )}
@@ -1154,7 +1266,7 @@ export default function App() {
               setClienteSeleccionado={setClienteSeleccionado}
               cambiarVista={cambiarVista}
               setModalConfirm={setModalConfirm}
-              borrarCliente={borrarCliente}
+              borrarCliente={iniciarBorradoCliente}
             />
           )}
 
@@ -1163,9 +1275,9 @@ export default function App() {
               clienteSeleccionado={clienteSeleccionado}
               cambiarVista={cambiarVista}
               setModalConfirm={setModalConfirm}
-              borrarCliente={borrarCliente}
+              borrarCliente={iniciarBorradoCliente}
               pedidos={pedidos}
-              borrarPedidoDefinitivo={borrarPedidoDefinitivo}
+              borrarPedidoDefinitivo={iniciarBorradoPedidoDefinitivo}
               setFotoAmpliada={setFotoAmpliada}
               setIsSaving={setIsSaving}
               mostrarToast={mostrarToast}
@@ -1222,6 +1334,7 @@ export default function App() {
         metodoPagoInput={metodoPagoInput}
         setMetodoPagoInput={setMetodoPagoInput}
         registrarPagoParcial={registrarPagoParcial}
+        saldoPendiente={saldoPendienteModalPago}
       />
 
       <ModalRechazo 

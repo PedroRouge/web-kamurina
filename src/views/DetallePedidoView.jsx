@@ -1,6 +1,7 @@
 import React from 'react';
 import { doc, setDoc } from "firebase/firestore";
 import { db } from '../services/firebase';
+import { parseNumero, formatearMoneda } from '../utils/helpers';
 
 export default function DetallePedidoView({
   pedidoSeleccionado,
@@ -25,17 +26,17 @@ export default function DetallePedidoView({
   const esRechazado = pedidoSeleccionado.estado === 'Rechazado';
       
   const pagosRealizados = pedidoSeleccionado.pagos || [];
-  const totalAbonado = pagosRealizados.reduce((acc, curr) => acc + curr.monto, 0);
-  const precioTotal = pedidoSeleccionado.precio || 0;
+  const totalAbonado = pagosRealizados.reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
+  const precioTotal = parseNumero(pedidoSeleccionado.precio, 0);
   const saldoPendiente = Math.max(0, precioTotal - totalAbonado);
   const porcentajePagado = precioTotal > 0 ? Math.min(100, Math.round((totalAbonado / precioTotal) * 100)) : 0;
 
   return (
     <div className={`bg-stone-900/40 backdrop-blur-md border p-6 md:p-10 rounded-3xl max-w-3xl mx-auto relative ${esRechazado ? 'border-red-900/60' : 'border-stone-800'}`}>
-      <button onClick={() => cambiarVista('dashboard')} className="absolute top-6 right-6 text-stone-400 hover:text-white bg-stone-800/50 px-3 py-1.5 rounded-xl text-xs">Volver</button>
+      <button onClick={() => cambiarVista('dashboard')} className="absolute top-6 right-6 text-stone-400 hover:text-white bg-stone-800/50 px-3 py-1.5 rounded-xl text-xs hover:bg-stone-700">Volver</button>
       
       <h2 className="text-2xl font-bold mb-1">Detalle del Pedido</h2>
-      <p className="text-stone-400 text-sm mb-6">Cliente: {pedidoSeleccionado.cliente}</p>
+      <p className="text-stone-400 text-sm mb-6">Cliente: <strong className="text-white">{pedidoSeleccionado.cliente}</strong> (ID: {pedidoSeleccionado.id})</p>
 
       {esRechazado && pedidoSeleccionado.motivoRechazo && (
         <div className="bg-red-950/40 border border-red-900/60 p-4 rounded-2xl mb-6 text-sm text-red-300">
@@ -47,11 +48,9 @@ export default function DetallePedidoView({
         <form onSubmit={async (e) => {
             e.preventDefault();
             const fd = new FormData(e.target);
-            const precioNuevo = Number(fd.get('precio'));
-            if (precioNuevo < 0) {
-              mostrarToast("⚠️ El precio no puede ser negativo");
-              return;
-            }
+            const precioNuevo = parseNumero(fd.get('precio'), 0);
+            const gastosNuevos = parseNumero(fd.get('gastos'), 0);
+            
             try {
               const nuevoEstado = fd.get('estado');
               const nuevaEntrega = fd.get('entrega');
@@ -60,7 +59,7 @@ export default function DetallePedidoView({
                   prenda: fd.get('prenda'),
                   tela: fd.get('tela'),
                   precio: precioNuevo,
-                  gastos: Number(fd.get('gastos')) || 0,
+                  gastos: gastosNuevos,
                   estado: nuevoEstado,
                   entrega: nuevaEntrega,
                   motivoRechazo: nuevoEstado === 'Rechazado' ? pedidoSeleccionado.motivoRechazo : '',
@@ -71,36 +70,37 @@ export default function DetallePedidoView({
               mostrarToast("Pedido actualizado con éxito");
               cambiarVista('dashboard');
             } catch (err) {
-              mostrarToast("Error al actualizar pedido");
+              console.error("Error al actualizar pedido:", err);
+              mostrarToast("Error de conexión al actualizar pedido");
             }
         }} onKeyDown={handleKeyDownEnter}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
                 <div>
-                    <label className="text-stone-500 pl-1 text-xs">Prenda</label>
-                    <input name="prenda" defaultValue={pedidoSeleccionado.prenda} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none" required />
+                    <label className="text-stone-500 pl-1 text-xs block mb-1">Prenda</label>
+                    <input name="prenda" defaultValue={pedidoSeleccionado.prenda} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none focus:border-stone-500" required />
                 </div>
                 <div>
-                    <label className="text-stone-500 pl-1 text-xs">Tela</label>
-                    <select name="tela" defaultValue={pedidoSeleccionado.tela} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none">
+                    <label className="text-stone-500 pl-1 text-xs block mb-1">Tela</label>
+                    <select name="tela" defaultValue={pedidoSeleccionado.tela} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none focus:border-stone-500 text-white">
                         <option value="">Ninguna</option>
                         {telas.map(t => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}
                     </select>
                 </div>
                 <div>
-                    <label className="text-stone-500 pl-1 text-xs">Precio Total ($)</label>
-                    <input name="precio" type="number" min="0" defaultValue={pedidoSeleccionado.precio} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none" />
+                    <label className="text-stone-500 pl-1 text-xs block mb-1">Precio Total ($)</label>
+                    <input name="precio" type="number" min="0" defaultValue={pedidoSeleccionado.precio || ''} placeholder="0" className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none focus:border-stone-500" />
                 </div>
                 <div>
-                    <label className="text-stone-500 pl-1 text-xs">Gastos ($)</label>
-                    <input name="gastos" type="number" min="0" defaultValue={pedidoSeleccionado.gastos !== undefined ? pedidoSeleccionado.gastos : 0} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none" />
+                    <label className="text-stone-500 pl-1 text-xs block mb-1">Gastos de Materiales ($)</label>
+                    <input name="gastos" type="number" min="0" defaultValue={pedidoSeleccionado.gastos !== undefined ? pedidoSeleccionado.gastos : ''} placeholder="0" className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none focus:border-stone-500" />
                 </div>
                 <div>
-                    <label className="text-stone-500 pl-1 text-xs">Fecha de Entrega (Ganancias)</label>
-                    <input name="entrega" type="date" defaultValue={pedidoSeleccionado.entrega || ''} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none text-white" />
+                    <label className="text-stone-500 pl-1 text-xs block mb-1">Fecha de Entrega Estimada</label>
+                    <input name="entrega" type="date" defaultValue={pedidoSeleccionado.entrega || ''} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none text-white focus:border-stone-500" />
                 </div>
-                <div className="col-span-1 sm:col-span-2">
-                    <label className="text-stone-500 pl-1 text-xs">Estado Logístico / Confección</label>
-                    <select name="estado" defaultValue={pedidoSeleccionado.estado} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none font-bold text-white" required>
+                <div>
+                    <label className="text-stone-500 pl-1 text-xs block mb-1">Estado Confección / Logística</label>
+                    <select name="estado" defaultValue={pedidoSeleccionado.estado} className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none font-bold text-white focus:border-stone-500" required>
                         <option value="Eligiendo telas">Eligiendo telas</option>
                         <option value="En confección / Pruebas">En confección / Pruebas</option>
                         <option value="Listo para retirar en el taller">Listo para retirar en el taller</option>
@@ -109,7 +109,7 @@ export default function DetallePedidoView({
                     </select>
                 </div>
             </div>
-            <button type="submit" className="w-full bg-stone-800 text-white py-3 rounded-xl font-bold mb-6 hover:bg-stone-700">Guardar Información</button>
+            <button type="submit" className="w-full bg-stone-800 text-white py-3 rounded-xl font-bold mb-6 hover:bg-stone-700 transition-colors">Guardar Información</button>
         </form>
       ) : (
         <div className="space-y-4 mb-6 text-sm bg-stone-950/50 p-4 rounded-2xl border border-stone-800">
@@ -118,7 +118,7 @@ export default function DetallePedidoView({
             <p><strong>Detalles (Color, forma, tela):</strong> {pedidoSeleccionado.descripcionDetalle}</p>
           )}
           <p><strong>Estado Actual:</strong> <span className={esRechazado ? "text-red-400 font-bold" : "text-white font-bold"}>{pedidoSeleccionado.estado}</span></p>
-          <p><strong>Precio Total:</strong> {pedidoSeleccionado.precio > 0 ? `$${pedidoSeleccionado.precio.toLocaleString()}` : 'A presupuestar'}</p>
+          <p><strong>Precio Total:</strong> {pedidoSeleccionado.precio > 0 ? formatearMoneda(pedidoSeleccionado.precio) : 'A presupuestar'}</p>
            
           {!esAdmin && pedidoSeleccionado.precio > 0 && !pedidoSeleccionado.pagado && (
             <button
@@ -135,7 +135,7 @@ export default function DetallePedidoView({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
           <h3 className="text-base font-bold text-white">Control de Pagos y Adelantos</h3>
           <span className={`text-xs px-3 py-1.5 rounded-full font-bold ${pedidoSeleccionado.pagado ? 'bg-emerald-950 text-emerald-300 border border-emerald-900/50' : 'bg-amber-950 text-amber-300 border border-amber-900/50'}`}>
-            {pedidoSeleccionado.pagado ? 'Pagado Total' : `Saldo Pendiente: $${saldoPendiente.toLocaleString()}`}
+            {pedidoSeleccionado.pagado ? 'Pagado Total' : `Saldo Pendiente: ${formatearMoneda(saldoPendiente)}`}
           </span>
         </div>
 
@@ -144,8 +144,8 @@ export default function DetallePedidoView({
         </div>
 
         <div className="flex justify-between text-xs text-stone-400 mb-5">
-          <span>Abonado: <strong className="text-white">${totalAbonado.toLocaleString()}</strong></span>
-          <span>Total prenda: <strong className="text-white">${precioTotal.toLocaleString()}</strong> ({porcentajePagado}%)</span>
+          <span>Abonado: <strong className="text-white">{formatearMoneda(totalAbonado)}</strong></span>
+          <span>Total prenda: <strong className="text-white">{formatearMoneda(precioTotal)}</strong> ({porcentajePagado}%)</span>
         </div>
 
         {pagosRealizados.length > 0 && (
@@ -154,13 +154,19 @@ export default function DetallePedidoView({
             {pagosRealizados.map((pago) => (
               <div key={pago.id} className="flex justify-between items-center bg-stone-900/90 p-3 rounded-xl border border-stone-800 text-xs">
                 <div className="flex items-center gap-3">
-                  <span className="font-bold text-emerald-400 text-sm">${pago.monto.toLocaleString()}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{formatearMoneda(pago.monto)}</span>
                   <span className="bg-stone-800 text-stone-300 px-2 py-0.5 rounded text-[11px]">{pago.metodo}</span>
                   <span className="text-stone-500 text-[11px]">{pago.fecha}</span>
                 </div>
                 {esAdmin && (
                   <button 
-                    onClick={() => eliminarPagoParcial(pago.id)}
+                    onClick={() => {
+                      setModalConfirm({
+                        isOpen: true,
+                        text: `¿Estás segura de que deseas eliminar este pago de ${formatearMoneda(pago.monto)}?`,
+                        action: () => eliminarPagoParcial(pago.id)
+                      });
+                    }}
                     className="text-stone-400 hover:text-red-400 p-1 font-bold text-sm"
                     title="Eliminar pago"
                   >
@@ -282,9 +288,10 @@ export default function DetallePedidoView({
           }
         }} onKeyDown={handleKeyDownEnter} className="flex flex-col sm:flex-row gap-2">
           <input name="nuevaFotoArchivo" type="file" accept="image/*" className="w-full bg-stone-900/50 p-2.5 rounded-xl border border-stone-800 outline-none text-xs text-stone-300 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-stone-800 file:text-white hover:file:bg-stone-700 cursor-pointer" />
-          <button type="submit" className="bg-white text-stone-950 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold whitespace-nowrap">Agregar Foto</button>
+          <button type="submit" className="bg-white text-stone-950 px-4 py-3 sm:py-2 rounded-xl text-sm font-bold whitespace-nowrap hover:bg-stone-200 transition-colors">Agregar Foto</button>
         </form>
       )}
     </div>
   );
 }
+

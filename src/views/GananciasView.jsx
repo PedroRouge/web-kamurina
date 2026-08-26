@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatearMoneda } from '../utils/helpers';
 
 export default function GananciasView({
   exportarReportePDF,
@@ -9,10 +10,13 @@ export default function GananciasView({
   return (
     <div className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-6 md:p-8 rounded-3xl max-w-3xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Ganancias Mensuales</h2>
+        <div>
+          <h2 className="text-2xl font-bold">Ganancias Mensuales</h2>
+          <p className="text-stone-400 text-xs mt-1">Cálculo de ingresos netos descontando gastos de telas y avíos</p>
+        </div>
         <button 
           onClick={exportarReportePDF}
-          className="bg-white text-stone-950 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-stone-200 transition-colors"
+          className="bg-white text-stone-950 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-stone-200 transition-colors shadow-lg"
         >
           🖨️ Exportar Reporte (PDF)
         </button>
@@ -32,11 +36,11 @@ export default function GananciasView({
                 <div className="flex gap-6 text-right">
                   <div>
                     <span className="block text-[10px] text-stone-500 uppercase">Ingresos Totales</span>
-                    <span className="text-base font-semibold">${datos.ingresos.toLocaleString()}</span>
+                    <span className="text-base font-semibold">{formatearMoneda(datos.ingresos)}</span>
                   </div>
                   <div>
                     <span className="block text-[10px] text-stone-500 uppercase">Ganancia Neta</span>
-                    <span className="text-xl font-bold text-emerald-400">${datos.ganancia.toLocaleString()}</span>
+                    <span className="text-xl font-bold text-emerald-400">{formatearMoneda(datos.ganancia)}</span>
                   </div>
                 </div>
               </div>
@@ -51,15 +55,15 @@ export default function GananciasView({
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-xs font-bold text-stone-200">{p.cliente} - {p.prenda}</span>
-                        <span className={`text-[9px] uppercase px-2 py-0.5 rounded ${p.pagado ? 'bg-emerald-900 text-emerald-300' : 'bg-stone-800 text-stone-300'}`}>
-                          {p.pagado ? 'Pagado' : 'Pendiente'}
+                        <span className={`text-[9px] uppercase px-2 py-0.5 rounded font-bold ${p.pagado ? 'bg-emerald-950 text-emerald-300 border border-emerald-900/50' : 'bg-stone-800 text-stone-300'}`}>
+                          {p.pagado ? 'Pagado Total' : 'Pendiente'}
                         </span>
                       </div>
                       <p className="text-[11px] text-stone-400">ID: {p.id}</p>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm font-bold">${p.precio.toLocaleString()}</span>
-                      <span className="block text-xs text-emerald-400 font-medium">+${p.gananciaPedido.toLocaleString()}</span>
+                      <span className="text-sm font-bold">{formatearMoneda(p.precio)}</span>
+                      <span className="block text-xs text-emerald-400 font-medium">+{formatearMoneda(p.gananciaPedido)}</span>
                     </div>
                   </div>
                 ))}
@@ -71,3 +75,4 @@ export default function GananciasView({
     </div>
   );
 }
+

@@ -1,0 +1,6 @@
+{
+  "name": "Atelier Kamurina",
+  "description": "Sistema de gestión de pedidos, confección de prendas, telas y medidas de clientes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

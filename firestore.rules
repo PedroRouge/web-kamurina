@@ -9,6 +9,7 @@ service cloud.firestore {
 
     function admin() {
       return autenticado()
+        && exists(/databases/$(database)/documents/usuarios_roles/$(request.auth.uid))
         && get(/databases/$(database)/documents/usuarios_roles/$(request.auth.uid)).data.rol == 'admin';
     }
 
@@ -29,13 +30,15 @@ service cloud.firestore {
 
     match /clientes/{clienteId} {
       allow read: if admin()
-        || (autenticado() && request.auth.uid == clienteId);
+        || (autenticado() && (request.auth.uid == clienteId || resource.data.id == request.auth.uid));
 
       allow create: if admin()
-        || (autenticado() && request.resource.data.id == request.auth.uid);
+        || (autenticado() && (request.resource.data.id == request.auth.uid || clienteId == request.auth.uid));
 
-      allow update, delete: if admin()
-        || (autenticado() && resource.data.id == request.auth.uid);
+      allow update: if admin()
+        || (autenticado() && (resource.data.id == request.auth.uid || clienteId == request.auth.uid));
+
+      allow delete: if admin();
     }
 
     match /pedidos/{pedidoId} {
@@ -43,10 +46,31 @@ service cloud.firestore {
         || (autenticado() && resource.data.clienteId == request.auth.uid);
 
       allow create: if admin()
-        || (autenticado() && request.resource.data.clienteId == request.auth.uid);
+        || (
+          autenticado() 
+          && request.resource.data.clienteId == request.auth.uid
+          && request.resource.data.estado == 'Pendiente de Aprobación'
+          && request.resource.data.precio == 0
+          && request.resource.data.pagado == false
+        );
 
-      allow update, delete: if admin()
-        || (autenticado() && resource.data.clienteId == request.auth.uid);
+      allow update: if admin()
+        || (
+          autenticado()
+          && resource.data.clienteId == request.auth.uid
+          && resource.data.estado == 'Pendiente de Aprobación'
+          && request.resource.data.clienteId == request.auth.uid
+          && request.resource.data.estado == 'Pendiente de Aprobación'
+          && request.resource.data.precio == resource.data.precio
+          && request.resource.data.pagado == resource.data.pagado
+        );
+
+      allow delete: if admin()
+        || (
+          autenticado()
+          && resource.data.clienteId == request.auth.uid
+          && resource.data.estado == 'Pendiente de Aprobación'
+        );
     }
   }
 }
