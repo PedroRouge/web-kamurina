@@ -859,37 +859,41 @@ export default function App() {
   };
 
 const borrarPedidoDefinitivo = async (idOrObj) => {
+    // 1. Limpiamos y extraemos el ID sea como sea que llegue
     let idDef = '';
-    
     if (typeof idOrObj === 'object' && idOrObj !== null) {
       idDef = idOrObj.id || idOrObj._id || idOrObj.pedidoId;
     } else {
       idDef = idOrObj;
     }
 
-    if (!idDef) {
-      mostrarToast("⚠️ Error: No se pudo identificar el ID del pedido.");
+    const idString = String(idDef).trim();
+
+    // 2. Filtro de seguridad por si llega vacío o como '[object Object]'
+    if (!idString || idString === 'undefined' || idString === '[object Object]') {
+      mostrarToast("⚠️ Error interno: El ID llegó vacío al confirmarse.");
+      console.error("ID corrupto:", idOrObj);
       return;
     }
 
-    const idString = String(idDef).trim();
-
     try {
-      // 1. Borrado real en Firestore
-      await deleteDoc(doc(db, "pedidos", idString));
-
-      // 2. Actualización inmediata del estado local para quitarlo de la pantalla
+      // 3. Borrado optimista (lo quitamos de tu pantalla al instante para que no parpadee)
       setPedidos(prev => prev.filter(p => String(p.id).trim() !== idString));
       
       if (pedidoSeleccionado && String(pedidoSeleccionado.id).trim() === idString) {
         setPedidoSeleccionado(null);
       }
+
+      // 4. El hachazo final en Firebase
+      await deleteDoc(doc(db, "pedidos", idString));
       
       cambiarVista('dashboard', true);
-      mostrarToast("Pedido eliminado definitivamente");
+      mostrarToast("¡Pedido eliminado definitivamente!");
+      
     } catch (err) {
+      // Si Firebase lo rechaza, ahora SÍ te vas a enterar del porqué
       console.error("Error al borrar pedido en Firebase:", err);
-      mostrarToast("Error al borrar pedido de la base de datos");
+      mostrarToast("⚠️ Firebase bloqueó el borrado. Revisa la consola.");
     }
   };
 
