@@ -62,8 +62,8 @@ export default function DetallePedidoView({
                   gastos: gastosNuevos,
                   estado: nuevoEstado,
                   entrega: nuevaEntrega,
-                  motivoRechazo: nuevoEstado === 'Rechazado' ? pedidoSeleccionado.motivoRechazo : '',
-                  ocultoDashboard: nuevoEstado === 'Rechazado' ? true : pedidoSeleccionado.ocultoDashboard
+                  motivoRechazo: nuevoEstado === 'Rechazado' ? (pedidoSeleccionado.motivoRechazo || 'Rechazado por el taller') : '',
+                  ocultoDashboard: pedidoSeleccionado.ocultoDashboard || false
               };
               await setDoc(doc(db, "pedidos", String(pedidoSeleccionado.id)), actualizado, { merge: true });
               setPedidoSeleccionado(actualizado);

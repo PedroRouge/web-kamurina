@@ -133,16 +133,30 @@ export default function App() {
       if (currentUser) {
         setLoadingRol(true);
         try {
+          const ADMIN_EMAILS = ['pedrorouge2022@gmail.com'];
+          const esAdminEmail = currentUser.email && ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+
           const docRef = doc(db, "usuarios_roles", currentUser.uid);
           const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().rol === 'admin') {
+          
+          if (esAdminEmail) {
+            setEsAdmin(true);
+            if (!docSnap.exists() || docSnap.data().rol !== 'admin') {
+              try {
+                await setDoc(docRef, { rol: 'admin', email: currentUser.email }, { merge: true });
+              } catch (e) {
+                console.warn("No se pudo escribir en usuarios_roles:", e);
+              }
+            }
+          } else if (docSnap.exists() && docSnap.data().rol === 'admin') {
             setEsAdmin(true);
           } else {
             setEsAdmin(false);
           }
         } catch (err) {
           console.error("Error consultando rol:", err);
-          setEsAdmin(false);
+          const ADMIN_EMAILS = ['pedrorouge2022@gmail.com'];
+          setEsAdmin(currentUser.email && ADMIN_EMAILS.includes(currentUser.email.toLowerCase()));
         }
         setLoadingRol(false);
         window.history.replaceState({ vista: 'dashboard' }, '');
@@ -731,10 +745,12 @@ export default function App() {
     }
   };
 
-  const borrarPedidoDefinitivo = async (id) => {
+  const borrarPedidoDefinitivo = async (idOrObj) => {
     try {
-      await deleteDoc(doc(db, "pedidos", String(id)));
-      if (pedidoSeleccionado?.id === id) {
+      const idDef = typeof idOrObj === 'object' && idOrObj !== null ? idOrObj.id : idOrObj;
+      if (!idDef) return;
+      await deleteDoc(doc(db, "pedidos", String(idDef)));
+      if (pedidoSeleccionado?.id === idDef) {
         setPedidoSeleccionado(null);
       }
       cambiarVista('dashboard');
@@ -857,12 +873,12 @@ export default function App() {
         await setDoc(doc(db, "pedidos", String(modalRechazo.pedidoId)), { 
           ...pedido, 
           estado: 'Rechazado', 
-          motivoRechazo: modalRechazo.motivo,
-          ocultoDashboard: true 
+          motivoRechazo: modalRechazo.motivo?.trim() || 'No disponible para confeccionar en este momento.',
+          ocultoDashboard: false 
         }, { merge: true });
       }
       setModalRechazo({ isOpen: false, pedidoId: null, motivo: '' });
-      mostrarToast("Pedido rechazado");
+      mostrarToast("Pedido rechazado y guardado en el historial");
     } catch (err) {
       console.error("Error rechazar pedido:", err);
       mostrarToast("Error al rechazar pedido");
@@ -909,13 +925,13 @@ export default function App() {
 
   const pedidosVisibles = pedidos.filter(p => {
     if (!esAdmin) {
-      if (p.ocultoDashboard) return false;
       const nombreUsuario = user?.displayName || user?.email;
       const userUid = user?.uid;
-      const coincideUsuario = (p.clienteId && p.clienteId === userUid) || (p.cliente === nombreUsuario);
+      const coincideUsuario = (p.clienteId && p.clienteId === userUid) || 
+        (p.cliente && nombreUsuario && p.cliente.toLowerCase() === nombreUsuario.toLowerCase());
       if (!coincideUsuario) return false;
     } else {
-      if (p.estado === 'Pendiente de Aprobación' || p.estado === 'Rechazado') return false;
+      if (p.estado === 'Pendiente de Aprobación') return false;
     }
 
     const textoBusqueda = busquedaDashboard.trim().toLowerCase();

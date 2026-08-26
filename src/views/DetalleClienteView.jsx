@@ -111,7 +111,9 @@ export default function DetalleClienteView({
                   )}
 
                   {esRechazado && p.motivoRechazo && (
-                    <p className="text-xs text-red-300 bg-red-950/40 p-2 rounded-xl"><strong>Motivo rechazo:</strong> {p.motivoRechazo}</p>
+                    <div className="text-xs text-red-200 bg-red-950/40 border border-red-900/50 p-2.5 rounded-xl">
+                      <strong className="text-red-400 block mb-0.5">Motivo de rechazo:</strong> {p.motivoRechazo}
+                    </div>
                   )}
                    
                   <div className="text-sm font-semibold">{p.precio > 0 ? `$${p.precio.toLocaleString()}` : 'Sin precio asignado'}</div>

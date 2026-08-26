@@ -7,6 +7,7 @@ const ESTADOS_FILTRO = [
   { label: 'Listo para retirar', value: 'Listo para retirar en el taller' },
   { label: 'En camino', value: 'En camino (Envío a domicilio)' },
   { label: 'Entregado', value: 'Entregado con éxito' },
+  { label: 'Rechazados', value: 'Rechazado' },
   { label: '📦 Archivados / Ocultos', value: 'ARCHIVADOS' },
 ];
 
@@ -37,7 +38,10 @@ export default function DashboardView({
       return Boolean(p.ocultoDashboard);
     }
     if (p.ocultoDashboard) return false;
-    return filtroEstado === 'TODOS' || p.estado === filtroEstado;
+    if (filtroEstado === 'TODOS') {
+      return esAdmin ? p.estado !== 'Rechazado' : true;
+    }
+    return p.estado === filtroEstado;
   });
 
   return (
@@ -140,7 +144,7 @@ export default function DashboardView({
                           },
                           { 
                             text: "🗑️ Eliminar definitivamente (Borrar de todo el sistema)", 
-                            action: () => borrarPedidoDefinitivo(p), 
+                            action: () => borrarPedidoDefinitivo(p.id), 
                             style: "bg-red-950/40 text-red-400 border border-red-900/50 hover:bg-red-900/40 text-xs py-3" 
                           }
                         ]
@@ -148,8 +152,8 @@ export default function DashboardView({
                     } else {
                       setModalConfirm({ 
                         isOpen: true, 
-                        text: `¿Estás seguro de que quieres eliminar la solicitud del pedido "${p.prenda}"?`, 
-                        action: () => borrarPedidoDefinitivo(p) 
+                        text: `¿Estás seguro de que quieres eliminar el pedido "${p.prenda}"?`, 
+                        action: () => borrarPedidoDefinitivo(p.id) 
                       });
                     }
                   }} 
@@ -161,8 +165,14 @@ export default function DashboardView({
                 
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-[10px] uppercase tracking-widest text-stone-500">{p.id}</span>
-                  <span className={`text-[10px] uppercase px-2 py-1 rounded ${esRechazado ? 'bg-red-950 text-red-400 border border-red-900/50' : (p.pagado ? 'bg-emerald-900 text-emerald-300' : 'bg-stone-800 text-stone-300')}`}>
-                    {esRechazado ? 'Rechazado' : (p.pagado ? 'Pagado' : 'Pendiente de Pago')}
+                  <span className={`text-[10px] uppercase px-2 py-1 rounded font-semibold ${
+                    esRechazado 
+                      ? 'bg-red-950 text-red-400 border border-red-900/50' 
+                      : p.estado === 'Pendiente de Aprobación'
+                      ? 'bg-amber-950 text-amber-300 border border-amber-900/50'
+                      : (p.pagado ? 'bg-emerald-900 text-emerald-300' : 'bg-stone-800 text-stone-300')
+                  }`}>
+                    {esRechazado ? 'Rechazado' : (p.estado === 'Pendiente de Aprobación' ? 'Pendiente' : (p.pagado ? 'Pagado' : 'Pendiente de Pago'))}
                   </span>
                 </div>
 
@@ -200,16 +210,24 @@ export default function DashboardView({
                         <option value="Listo para retirar en el taller">Listo para retirar en el taller</option>
                         <option value="En camino (Envío a domicilio)">En camino (Envío a domicilio)</option>
                         <option value="Entregado con éxito">Entregado con éxito</option>
+                        <option value="Rechazado">Rechazado</option>
                       </select>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-stone-400 text-sm mb-2">Estado: <strong className={esRechazado ? "text-red-400" : "text-white"}>{p.estado}</strong></p>
+                  <p className="text-stone-400 text-sm mb-2">Estado: <strong className={esRechazado ? "text-red-400" : (p.estado === 'Pendiente de Aprobación' ? "text-amber-300" : "text-white")}>{p.estado}</strong></p>
+                )}
+
+                {p.descripcionDetalle && (
+                  <p className="text-xs text-stone-400 mb-2 line-clamp-2">
+                    <strong className="text-stone-300">Detalles:</strong> {p.descripcionDetalle}
+                  </p>
                 )}
 
                 {esRechazado && p.motivoRechazo && (
-                  <div className="bg-red-950/30 border border-red-900/40 p-3 rounded-xl mb-3 text-xs text-red-300">
-                    <strong>Motivo de rechazo:</strong> {p.motivoRechazo}
+                  <div className="bg-red-950/40 border border-red-900/50 p-3 rounded-2xl mb-3 text-xs text-red-200">
+                    <strong className="text-red-400 block mb-0.5">⚠️ Solicitud Rechazada:</strong>
+                    {p.motivoRechazo}
                   </div>
                 )}
 
