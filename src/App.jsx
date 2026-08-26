@@ -859,31 +859,31 @@ export default function App() {
   };
 
 const borrarPedidoDefinitivo = async (idOrObj) => {
-    // Extraer el ID exacto ya sea que llegue como string, número u objeto
     let idDef = '';
+    
     if (typeof idOrObj === 'object' && idOrObj !== null) {
-      idDef = idOrObj.id || idOrObj._id;
+      idDef = idOrObj.id || idOrObj._id || idOrObj.pedidoId;
     } else {
       idDef = idOrObj;
     }
 
     if (!idDef) {
-      mostrarToast("⚠️ Error: ID de pedido no válido");
+      mostrarToast("⚠️ Error: No se pudo identificar el ID del pedido.");
       return;
     }
 
     const idString = String(idDef).trim();
 
     try {
-      // 1. Actualización optimista inmediata en la interfaz
+      // 1. Borrado real en Firestore
+      await deleteDoc(doc(db, "pedidos", idString));
+
+      // 2. Actualización inmediata del estado local para quitarlo de la pantalla
       setPedidos(prev => prev.filter(p => String(p.id).trim() !== idString));
       
       if (pedidoSeleccionado && String(pedidoSeleccionado.id).trim() === idString) {
         setPedidoSeleccionado(null);
       }
-
-      // 2. Borrado real en la base de datos de Firestore
-      await deleteDoc(doc(db, "pedidos", idString));
       
       cambiarVista('dashboard', true);
       mostrarToast("Pedido eliminado definitivamente");
