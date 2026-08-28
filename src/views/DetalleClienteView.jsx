@@ -197,43 +197,44 @@ export default function DetalleClienteView({
       </div>
 {/* 2. ESTA ES LA PLANTILLA DE IMPRESIÓN */}
       <div className="print-ficha-exclusiva hidden">
-        
-        <div className="border-b-2 border-black pb-2 mb-4 print:mt-0 print:pt-0">
-          {/* Acá agregué font-serif para darle el toque elegante al título */}
-          <h1 className="text-3xl font-serif font-bold tracking-tight text-black">
-            ATELIER KAMURINA - FICHA DE CLIENTE
-          </h1>
-        </div>
-        
-        {/* Volvimos al texto simple y compacto para el cliente */}
-        <div className="mb-4 space-y-1">
-          <p className="text-xl font-bold text-black">Cliente: {clienteSeleccionado.nombre}</p>
-          <p className="text-sm text-gray-700">Teléfono: {clienteSeleccionado.telefono}</p>
-        </div>
-        
-        <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-2 text-black">
-          Medidas Registradas
-        </h3>
-        
-        {/* Volvimos al grid original, bien juntito y del mismo tamaño que antes */}
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm mb-4">
-          {MEDIDAS_LISTA.map(m => (
-            <div key={m} className="flex justify-between border-b border-gray-200 py-1">
-              <span className="text-gray-800 font-medium">{m}:</span>
-              <span className="font-bold text-black">{clienteSeleccionado.medidas?.[m] || 'N/A'}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Sección de Notas con el recuadro que pediste, pero adaptado para que no se pase de hoja */}
-        <div className="w-full">
-          <h3 className="text-md font-bold text-black mb-2 uppercase tracking-wider">
-            Notas:
+        {/* Envolvemos todo en un contenedor flexible que ocupa el alto de la hoja (descontando el padding) */}
+        <div className="flex flex-col h-[calc(100vh-2.2cm)]">
+          
+          <div className="border-b-2 border-black pb-2 mb-4 print:mt-0 print:pt-0">
+            <h1 className="text-3xl font-serif font-bold tracking-tight text-black">
+              ATELIER KAMURINA - FICHA DE CLIENTE
+            </h1>
+          </div>
+          
+          <div className="mb-4 space-y-1">
+            <p className="text-xl font-bold text-black">Cliente: {clienteSeleccionado.nombre}</p>
+            <p className="text-sm text-gray-700">Teléfono: {clienteSeleccionado.telefono}</p>
+          </div>
+          
+          <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-2 text-black">
+            Medidas Registradas
           </h3>
-          {/* h-56 le da una altura enorme pero calculada para que entre perfecto en el A4 */}
-          <div className="h-56 w-full border-2 border-dashed border-gray-400 rounded-xl p-4"></div>
-        </div>
+          
+          {/* shrink-0 evita que las medidas se aplasten si falta espacio */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm mb-4 shrink-0">
+            {MEDIDAS_LISTA.map(m => (
+              <div key={m} className="flex justify-between border-b border-gray-200 py-1">
+                <span className="text-gray-800 font-medium">{m}:</span>
+                <span className="font-bold text-black">{clienteSeleccionado.medidas?.[m] || 'N/A'}</span>
+              </div>
+            ))}
+          </div>
 
+          {/* flex-1 hace que esta sección crezca hasta tocar el fondo de la hoja */}
+          <div className="w-full flex-1 flex flex-col pb-2">
+            <h3 className="text-md font-bold text-black mb-2 uppercase tracking-wider">
+              Notas:
+            </h3>
+            {/* flex-1 estira el recuadro punteado al máximo posible */}
+            <div className="flex-1 w-full border-2 border-dashed border-gray-400 rounded-xl p-4"></div>
+          </div>
+
+        </div>
       </div>
     </>
   );
