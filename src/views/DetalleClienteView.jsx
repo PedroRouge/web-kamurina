@@ -195,60 +195,43 @@ export default function DetalleClienteView({
           )}
         </div>
       </div>
-
-    {/* 2. ESTA ES LA PLANTILLA DE IMPRESIÓN CON DISEÑO PREMIUM */}
-      <div className="print-ficha-exclusiva hidden font-sans">
+{/* 2. ESTA ES LA PLANTILLA DE IMPRESIÓN */}
+      <div className="print-ficha-exclusiva hidden">
         
-        {/* Encabezado Principal */}
-        <div className="border-b-4 border-stone-800 pb-6 mb-8 print:mt-0 print:pt-0 flex justify-between items-end">
-          <div>
-            <h1 className="text-4xl font-serif font-bold tracking-tight text-stone-900">
-              ATELIER KAMURINA
-            </h1>
-            <p className="text-stone-500 font-medium tracking-widest uppercase text-sm mt-1">
-              Ficha de Medidas
-            </p>
-          </div>
-          <div className="text-right text-stone-400 text-xs font-mono">
-            {new Date().toLocaleDateString('es-AR')}
-          </div>
-        </div>
-
-        {/* Tarjeta del Cliente */}
-        <div className="bg-stone-100/80 rounded-2xl p-6 mb-10 border border-stone-200">
-          <p className="text-sm text-stone-500 uppercase tracking-wider mb-1">Cliente</p>
-          <p className="text-2xl font-bold text-stone-900">{clienteSeleccionado.nombre}</p>
-          <p className="text-stone-600 mt-1">
-            <span className="font-semibold">Tel:</span> {clienteSeleccionado.telefono}
-          </p>
+        <div className="border-b-2 border-black pb-2 mb-4 print:mt-0 print:pt-0">
+          {/* Acá agregué font-serif para darle el toque elegante al título */}
+          <h1 className="text-3xl font-serif font-bold tracking-tight text-black">
+            ATELIER KAMURINA - FICHA DE CLIENTE
+          </h1>
         </div>
         
-        {/* Grilla de Medidas */}
-        <h3 className="text-sm font-bold uppercase tracking-widest text-stone-900 mb-6">
-          Registro Anatómico
+        {/* Volvimos al texto simple y compacto para el cliente */}
+        <div className="mb-4 space-y-1">
+          <p className="text-xl font-bold text-black">Cliente: {clienteSeleccionado.nombre}</p>
+          <p className="text-sm text-gray-700">Teléfono: {clienteSeleccionado.telefono}</p>
+        </div>
+        
+        <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-2 text-black">
+          Medidas Registradas
         </h3>
         
-        <div className="grid grid-cols-2 gap-x-12 gap-y-6">
+        {/* Volvimos al grid original, bien juntito y del mismo tamaño que antes */}
+        <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm mb-4">
           {MEDIDAS_LISTA.map(m => (
-            <div key={m} className="flex justify-between items-end border-b-2 border-stone-100 pb-2">
-              <span className="text-stone-500 font-medium text-xs uppercase tracking-wider w-2/3 leading-tight">
-                {m}
-              </span>
-              <span className="font-bold text-xl text-stone-900">
-                {clienteSeleccionado.medidas?.[m] || '-'}
-              </span>
+            <div key={m} className="flex justify-between border-b border-gray-200 py-1">
+              <span className="text-gray-800 font-medium">{m}:</span>
+              <span className="font-bold text-black">{clienteSeleccionado.medidas?.[m] || 'N/A'}</span>
             </div>
           ))}
         </div>
 
-        {/* Sección de Notas / Bocetos */}
-        <div className="mt-12 w-full break-inside-avoid">
-          <h3 className="text-sm font-bold uppercase tracking-widest text-stone-900 mb-3">
-            Bocetos y Notas Adicionales
+        {/* Sección de Notas con el recuadro que pediste, pero adaptado para que no se pase de hoja */}
+        <div className="w-full">
+          <h3 className="text-md font-bold text-black mb-2 uppercase tracking-wider">
+            Notas:
           </h3>
-          <div className="h-64 w-full border-2 border-dashed border-stone-300 rounded-3xl bg-stone-50/50 p-4">
-            {/* El espacio en blanco para dibujar */}
-          </div>
+          {/* h-56 le da una altura enorme pero calculada para que entre perfecto en el A4 */}
+          <div className="h-56 w-full border-2 border-dashed border-gray-400 rounded-xl p-4"></div>
         </div>
 
       </div>
