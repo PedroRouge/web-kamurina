@@ -1,12 +1,30 @@
 @import "tailwindcss";
 
 @media print {
+  @page {
+    /* Esto es lo que elimina la fecha, hora y URL automáticas del navegador */
+    margin: 0.5cm; 
+  }
+
+  /* Ocultar barra de scroll en la impresión */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: white !important;
+  }
+
   body * {
     visibility: hidden !important;
   }
+
   .print-ficha-exclusiva, .print-ficha-exclusiva *, .print-ganancias-exclusiva, .print-ganancias-exclusiva * {
     visibility: visible !important;
   }
+
   .print-ficha-exclusiva, .print-ganancias-exclusiva {
     position: absolute !important;
     left: 0 !important;
@@ -16,7 +34,9 @@
     background: white !important;
     color: black !important;
     z-index: 999999;
-    padding: 20px;
+    /* Reduje el padding a 0 aquí para que suba bien arriba en la hoja, el padding interior lo manejas con Tailwind en el componente */
+    padding: 0 !important;
+    margin: 0 !important;
     display: block !important;
   }
 }
