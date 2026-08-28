@@ -196,32 +196,59 @@ export default function DetalleClienteView({
         </div>
       </div>
 
-      {/* 2. ESTA ES LA PLANTILLA DE IMPRESIÓN */}
-      <div className="print-ficha-exclusiva hidden">
-        <div className="border-b-2 border-black pb-4 mb-6 print:mt-0 print:pt-0">
-          <h1 className="text-3xl font-bold tracking-tight text-black">ATELIER KAMURINA - FICHA DE CLIENTE</h1>
+    {/* 2. ESTA ES LA PLANTILLA DE IMPRESIÓN CON DISEÑO PREMIUM */}
+      <div className="print-ficha-exclusiva hidden font-sans">
+        
+        {/* Encabezado Principal */}
+        <div className="border-b-4 border-stone-800 pb-6 mb-8 print:mt-0 print:pt-0 flex justify-between items-end">
+          <div>
+            <h1 className="text-4xl font-serif font-bold tracking-tight text-stone-900">
+              ATELIER KAMURINA
+            </h1>
+            <p className="text-stone-500 font-medium tracking-widest uppercase text-sm mt-1">
+              Ficha de Medidas
+            </p>
+          </div>
+          <div className="text-right text-stone-400 text-xs font-mono">
+            {new Date().toLocaleDateString('es-AR')}
+          </div>
         </div>
-        <div className="mb-6 space-y-1">
-          <p className="text-xl font-bold text-black">Cliente: {clienteSeleccionado.nombre}</p>
-          <p className="text-sm text-gray-700">Teléfono: {clienteSeleccionado.telefono}</p>
+
+        {/* Tarjeta del Cliente */}
+        <div className="bg-stone-100/80 rounded-2xl p-6 mb-10 border border-stone-200">
+          <p className="text-sm text-stone-500 uppercase tracking-wider mb-1">Cliente</p>
+          <p className="text-2xl font-bold text-stone-900">{clienteSeleccionado.nombre}</p>
+          <p className="text-stone-600 mt-1">
+            <span className="font-semibold">Tel:</span> {clienteSeleccionado.telefono}
+          </p>
         </div>
         
-        <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-4 text-black">Medidas Registradas</h3>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+        {/* Grilla de Medidas */}
+        <h3 className="text-sm font-bold uppercase tracking-widest text-stone-900 mb-6">
+          Registro Anatómico
+        </h3>
+        
+        <div className="grid grid-cols-2 gap-x-12 gap-y-6">
           {MEDIDAS_LISTA.map(m => (
-            <div key={m} className="flex justify-between border-b border-gray-200 py-1.5">
-              <span className="text-gray-800 font-medium">{m}:</span>
-              <span className="font-bold text-black">{clienteSeleccionado.medidas?.[m] || 'N/A'}</span>
+            <div key={m} className="flex justify-between items-end border-b-2 border-stone-100 pb-2">
+              <span className="text-stone-500 font-medium text-xs uppercase tracking-wider w-2/3 leading-tight">
+                {m}
+              </span>
+              <span className="font-bold text-xl text-stone-900">
+                {clienteSeleccionado.medidas?.[m] || '-'}
+              </span>
             </div>
           ))}
         </div>
 
-        {/* 3. SECCIÓN DE NOTAS AL FINAL DE LA FICHA */}
-        <div className="mt-10 w-full">
-          <h3 className="text-lg font-bold text-black mb-2">
-            Notas:
+        {/* Sección de Notas / Bocetos */}
+        <div className="mt-12 w-full break-inside-avoid">
+          <h3 className="text-sm font-bold uppercase tracking-widest text-stone-900 mb-3">
+            Bocetos y Notas Adicionales
           </h3>
-          <div className="h-40 w-full"></div>
+          <div className="h-64 w-full border-2 border-dashed border-stone-300 rounded-3xl bg-stone-50/50 p-4">
+            {/* El espacio en blanco para dibujar */}
+          </div>
         </div>
 
       </div>
