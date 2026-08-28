@@ -29,7 +29,8 @@ export default function DetalleClienteView({
 
   return (
     <>
-      <div className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-6 md:p-8 rounded-3xl max-w-2xl mx-auto relative">
+      {/* 1. AGREGAMOS print:hidden AQUÍ PARA QUE LA APP DESAPAREZCA AL IMPRIMIR Y NO OCUPE ESPACIO */}
+      <div className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-6 md:p-8 rounded-3xl max-w-2xl mx-auto relative print:hidden">
         <button onClick={() => cambiarVista('clientes')} className="absolute top-4 right-4 text-stone-400 hover:text-white">Volver</button>
         <h2 className="text-3xl font-bold mb-1">{clienteSeleccionado.nombre}</h2>
         <p className="text-stone-400 text-sm mb-6">{clienteSeleccionado.telefono}</p>
@@ -45,13 +46,12 @@ export default function DetalleClienteView({
           </button>
         </div>
 
-                <h3 className="text-lg font-semibold mb-3">Medidas Registradas</h3>
+        <h3 className="text-lg font-semibold mb-3">Medidas Registradas</h3>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs mb-8 bg-stone-950/50 p-4 rounded-2xl border border-stone-800">
           {MEDIDAS_LISTA.map(m => (
             <div key={m} className="text-stone-300"><strong>{m}:</strong> {clienteSeleccionado.medidas?.[m] || 'N/A'}</div>
           ))}
         </div>
-
 
         <h3 className="text-lg font-semibold mb-3">Historial de Pedidos</h3>
         <div className="space-y-4">
@@ -196,15 +196,17 @@ export default function DetalleClienteView({
         </div>
       </div>
 
+      {/* 2. ESTA ES LA PLANTILLA DE IMPRESIÓN */}
       <div className="print-ficha-exclusiva hidden">
-        <div className="border-b-2 border-black pb-4 mb-6">
+        <div className="border-b-2 border-black pb-4 mb-6 print:mt-0 print:pt-0">
           <h1 className="text-3xl font-bold tracking-tight text-black">ATELIER KAMURINA - FICHA DE CLIENTE</h1>
         </div>
         <div className="mb-6 space-y-1">
           <p className="text-xl font-bold text-black">Cliente: {clienteSeleccionado.nombre}</p>
           <p className="text-sm text-gray-700">Teléfono: {clienteSeleccionado.telefono}</p>
         </div>
-                <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-4 text-black">Medidas Registradas</h3>
+        
+        <h3 className="text-md font-bold uppercase tracking-wider border-b border-gray-400 pb-1 mb-4 text-black">Medidas Registradas</h3>
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
           {MEDIDAS_LISTA.map(m => (
             <div key={m} className="flex justify-between border-b border-gray-200 py-1.5">
@@ -212,6 +214,14 @@ export default function DetalleClienteView({
               <span className="font-bold text-black">{clienteSeleccionado.medidas?.[m] || 'N/A'}</span>
             </div>
           ))}
+        </div>
+
+        {/* 3. SECCIÓN DE NOTAS AL FINAL DE LA FICHA */}
+        <div className="mt-10 w-full">
+          <h3 className="text-lg font-bold text-black mb-2">
+            Notas:
+          </h3>
+          <div className="h-40 w-full"></div>
         </div>
 
       </div>

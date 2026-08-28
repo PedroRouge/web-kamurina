@@ -2,11 +2,10 @@
 
 @media print {
   @page {
-    /* Esto es lo que elimina la fecha, hora y URL automáticas del navegador */
-    margin: 0.5cm; 
+    /* Esto quita TODO el margen del navegador. Lo pega al borde absoluto. */
+    margin: 0 !important; 
   }
 
-  /* Ocultar barra de scroll en la impresión */
   ::-webkit-scrollbar {
     display: none;
   }
@@ -34,9 +33,15 @@
     background: white !important;
     color: black !important;
     z-index: 999999;
-    /* Reduje el padding a 0 aquí para que suba bien arriba en la hoja, el padding interior lo manejas con Tailwind en el componente */
-    padding: 0 !important;
+    /* Le dejamos un padding pequeñito (1cm) para que la impresora física no te corte las letras, pero se verá bien arriba */
+    padding: 1cm !important; 
     margin: 0 !important;
     display: block !important;
+  }
+
+  /* ESTO ES CLAVE: Mata el margen superior del primer contenedor que esté empujando el título hacia abajo */
+  .print-ficha-exclusiva > div {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
   }
 }
