@@ -24,21 +24,20 @@
     visibility: visible !important;
   }
 
-  .print-ficha-exclusiva, .print-ganancias-exclusiva {
-    position: absolute !important;
+.print-ficha-exclusiva, .print-ganancias-exclusiva {
+    position: fixed !important; /* <-- ESTA ES LA MAGIA: Rompe con la estructura de la app */
     left: 0 !important;
     top: 0 !important;
-    width: 100% !important;
-    height: auto !important;
+    width: 100vw !important;
+    height: 100vh !important;
     background: white !important;
     color: black !important;
-    z-index: 999999;
-    /* Le dejamos un padding pequeñito (1cm) para que la impresora física no te corte las letras, pero se verá bien arriba */
+    z-index: 999999 !important;
+    /* Le damos 1cm de padding para que la impresora no corte el texto, pero empezará desde bien arriba */
     padding: 1cm !important; 
     margin: 0 !important;
     display: block !important;
   }
-
   /* ESTO ES CLAVE: Mata el margen superior del primer contenedor que esté empujando el título hacia abajo */
   .print-ficha-exclusiva > div {
     margin-top: 0 !important;
