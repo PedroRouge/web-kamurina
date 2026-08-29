@@ -55,7 +55,6 @@ export default function Navbar({
               )}
             </button>
             <button onClick={() => cambiarVista('clientes')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'clientes' ? 'text-white font-semibold' : ''}`}>Clientes</button>
-            <button onClick={() => cambiarVista('molderia')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'molderia' ? 'text-white font-semibold' : ''}`}>Moldería</button>
             <button onClick={() => cambiarVista('catalogo')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'catalogo' ? 'text-white font-semibold' : ''}`}>Catálogo Telas</button>
             <button onClick={() => cambiarVista('catalogo-avios')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'catalogo-avios' ? 'text-white font-semibold' : ''}`}>Catálogo Avios</button>
             <button onClick={() => cambiarVista('calculadora')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'calculadora' ? 'text-white font-semibold' : ''}`}>Calculadora</button>

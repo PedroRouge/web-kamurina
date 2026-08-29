@@ -1494,15 +1494,7 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
             />
           )}
 
-          {esAdmin && vista === 'molderia' && (
-            <MolderiaView 
-              clientes={clientes}
-              clienteInicial={clienteSeleccionado}
-              cambiarVista={cambiarVista}
-              setClienteSeleccionado={setClienteSeleccionado}
-              mostrarToast={mostrarToast}
-            />
-          )}
+          {/* MolderiaView deshabilitada temporalmente */}
         </Suspense>
       </ErrorBoundary>
       </main>

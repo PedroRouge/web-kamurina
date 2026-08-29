@@ -37,7 +37,6 @@ export default function DetalleClienteView({
          
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <button onClick={() => cambiarVista('editar-cliente')} className="bg-stone-800 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-stone-700 hover:bg-stone-700 font-medium">Editar Datos y Medidas</button>
-          <button onClick={() => cambiarVista('molderia')} className="bg-stone-800 text-amber-300 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-amber-900/50 hover:bg-stone-700 font-medium flex items-center justify-center gap-1.5">📐 Trazar Moldería</button>
           <button onClick={() => window.print()} className="bg-stone-800 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-stone-700 hover:bg-stone-700 font-medium">Imprimir Ficha</button>
           <button 
             onClick={() => borrarCliente(clienteSeleccionado)} 

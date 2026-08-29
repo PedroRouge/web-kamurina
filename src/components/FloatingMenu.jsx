@@ -7,7 +7,6 @@ export default function FloatingMenu({ esAdmin, menuAbierto, setMenuAbierto, cam
     <>
       {menuAbierto && (
         <div className="fixed bottom-24 right-4 md:right-8 z-50 flex flex-col gap-3">
-          <button onClick={() => { cambiarVista('molderia'); setMenuAbierto(false); }} className="bg-stone-800 p-4 rounded-xl text-sm border border-amber-800/40 text-amber-300 hover:bg-stone-700 shadow-lg font-medium">📐 Moldería Automática</button>
           <button onClick={() => { cambiarVista('nuevo-cliente'); setMenuAbierto(false); }} className="bg-stone-800 p-4 rounded-xl text-sm border border-stone-700 hover:bg-stone-700 shadow-lg">Nuevo Cliente</button>
           <button onClick={() => { cambiarVista('nuevo-pedido'); setMenuAbierto(false); }} className="bg-stone-800 p-4 rounded-xl text-sm border border-stone-700 hover:bg-stone-700 shadow-lg">Nuevo Pedido</button>
           <button onClick={() => { cambiarVista('nueva-tela'); setMenuAbierto(false); }} className="bg-stone-800 p-4 rounded-xl text-sm border border-stone-700 hover:bg-stone-700 shadow-lg">Nueva Tela</button>
