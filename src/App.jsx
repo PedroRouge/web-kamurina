@@ -39,7 +39,8 @@ import EditarAvioView from './views/EditarAvioView';
 import DetalleAvioView from './views/DetalleAvioView';
 import CalculadoraView from './views/CalculadoraView';
 import GananciasView from './views/GananciasView';
-import MolderiaView from './views/MolderiaView';
+
+const MolderiaView = React.lazy(() => import('./views/MolderiaView'));
 
 const ViewLoadingFallback = () => (
   <div className="py-20 flex justify-center items-center text-stone-500 text-sm italic">
