@@ -20,6 +20,7 @@
         "@freesewing/charlie": "^4.10.1",
         "@freesewing/config": "^4.10.1",
         "@freesewing/core": "^4.10.1",
+        "@freesewing/core-plugins": "^4.10.1",
         "@freesewing/cornelius": "^4.10.1",
         "@freesewing/crux": "^4.10.1",
         "@freesewing/diana": "^4.10.1",
@@ -33,18 +34,16 @@
         "@freesewing/lucy": "^4.10.1",
         "@freesewing/lumina": "^4.10.1",
         "@freesewing/lumira": "^4.10.1",
+        "@freesewing/models": "^4.10.1",
         "@freesewing/paco": "^4.10.1",
         "@freesewing/penelope": "^4.10.1",
         "@freesewing/plugin-annotations": "^4.10.1",
-        "@freesewing/plugin-bundle": "^2.22.2",
+        "@freesewing/plugin-bin-pack": "^4.10.1",
         "@freesewing/plugin-bust": "^4.10.1",
-        "@freesewing/plugin-buttons": "^2.22.2",
-        "@freesewing/plugin-cutlist": "^3.0.0-alpha.0",
-        "@freesewing/plugin-dimension": "^2.22.2",
-        "@freesewing/plugin-grainline": "^2.22.2",
+        "@freesewing/plugin-measurements": "^4.10.1",
+        "@freesewing/plugin-mirror": "^4.10.1",
         "@freesewing/plugin-round": "^4.10.1",
-        "@freesewing/plugin-scalebox": "^2.22.2",
-        "@freesewing/plugin-title": "^2.22.2",
+        "@freesewing/plugin-sprinkle": "^4.10.1",
         "@freesewing/plugin-transform": "^4.10.1",
         "@freesewing/sandy": "^4.10.1",
         "@freesewing/shin": "^4.10.1",
@@ -53,11 +52,10 @@
         "@freesewing/sven": "^4.10.1",
         "@freesewing/tamiko": "^4.10.1",
         "@freesewing/teagan": "^4.10.1",
-        "@freesewing/theo": "^2.22.2",
         "@freesewing/tiberius": "^4.10.1",
         "@freesewing/titan": "^4.10.1",
         "@freesewing/trayvon": "^4.10.1",
-        "@freesewing/ursula": "^2.22.2",
+        "@freesewing/utils": "^4.10.1",
         "@freesewing/wahid": "^4.10.1",
         "@freesewing/waralee": "^4.10.1",
         "@freesewing/yuri": "^4.10.1",
@@ -216,8 +214,6 @@
 
     "@freesewing/config": ["@freesewing/config@4.10.1", "", {}, "sha512-YFsrKU/HLhUNKG7rWRmSYw4LmavIIdr5lQCcin1MqOfjHZF8E9U+d7UKdV/cbE1JIfIfhvcevKKEKGucaZ6RuA=="],
 
-    "@freesewing/config-helpers": ["@freesewing/config-helpers@2.22.2", "", {}, "sha512-lznAb2DtstIWMbFiIMO7TD0nCPtwmtAcyhCNMRECpZq5KJ8RzE01VzCEyww5aOUPTz2Pst9bwarevRHRyP9hiQ=="],
-
     "@freesewing/core": ["@freesewing/core@4.10.1", "", { "dependencies": { "@freesewing/core-plugins": "4.10.1", "bezier-js": "6.1.4", "hooks": "0.3.2", "lodash.clonedeep": "^4.5.0", "lodash.get": "4.4.2", "lodash.set": "4.3.2", "lodash.unset": "4.5.2" } }, "sha512-MWAPHxUryIdf+BDgeVHT8cbjqAA9O+ro73ciQYOts2oVgnJ9k8qmaIPTBy1c1+TkWL3Qrla2aH0e3kp8ljqCng=="],
 
     "@freesewing/core-plugins": ["@freesewing/core-plugins@4.10.1", "", { "dependencies": { "@freesewing/plugin-annotations": "4.10.1", "@freesewing/plugin-bin-pack": "4.10.1", "@freesewing/plugin-measurements": "4.10.1", "@freesewing/plugin-mirror": "4.10.1", "@freesewing/plugin-round": "4.10.1", "@freesewing/plugin-sprinkle": "4.10.1" }, "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-rN9dD+w/KmzzJgiUbXc7Z+n7zFi+QrQkj7hmJdMjaK65CB4OB7PHQkNPiy9xm358PiPvcfU21DcgNoqWqMqO8g=="],
@@ -250,6 +246,8 @@
 
     "@freesewing/lumira": ["@freesewing/lumira@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-k70qON1qu8rR+ZyowksQ5oV/IFX/j/VjxJPTEeB7n46vRIdENnniE7EBoxmyd/8dTkoMVw029AUIRsAxEe95eQ=="],
 
+    "@freesewing/models": ["@freesewing/models@4.10.1", "", {}, "sha512-A21igJiZ/UPJFTM3LE36mtJD2hWt9VNTO6IL64BXdq8P69tx8bHcq4cvm7KuiskULkLSTNo8sprb39qykMaiVA=="],
+
     "@freesewing/paco": ["@freesewing/paco@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1", "@freesewing/snapseries": "4.10.1", "@freesewing/titan": "4.10.1" } }, "sha512-bDgonXY0xlWkLJmfGZVvxwo4dhr84AhvyndvprjipwZxlZTviDMY33TDcN8U9G6MDSLqRegCWHMvG9B0Dl8TJQ=="],
 
     "@freesewing/penelope": ["@freesewing/penelope@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-iBggzSShGRx77xNBA57SWjxQqo+qCr6l5QeTEVdbLIbSKOCIPSY38fEj7h0pQKrsSSeW9Y8gPautPCcBZOuZVw=="],
@@ -258,21 +256,11 @@
 
     "@freesewing/plugin-bin-pack": ["@freesewing/plugin-bin-pack@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-GmZRz45upJxA18LNAnpV28vte5f99vv+xNWjw5B98F0NOZ/xIJpz8oUrrm7HjjKDoheGzQzAdtpZeI4WCKIHkw=="],
 
-    "@freesewing/plugin-bundle": ["@freesewing/plugin-bundle@2.22.2", "", { "peerDependencies": { "@freesewing/core": "^2.22.2" } }, "sha512-YTNAchgzujwrz1rLy7Q0Xgaktn5dtCRwz23qs+lRdmYXqK6RQFURdJb2NGO849Z9qeqpLk2gHHzTUyffom+0LA=="],
-
     "@freesewing/plugin-bust": ["@freesewing/plugin-bust@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-YUv3tf87YSVDk+1BIXc48yck0BNzIv+9/lzbra9FVqNVzZLxC7SLHBNsfJBL92CcYljrvwybAFeyUDhverzSPQ=="],
-
-    "@freesewing/plugin-buttons": ["@freesewing/plugin-buttons@2.22.2", "", { "peerDependencies": { "@freesewing/core": "^2.22.2" } }, "sha512-mo9d20oxq5DgsxOwyWFBV2cQu/abJIrWlCgDEz6UNW5gCF5gS51s16tKGr0FshBSAz+5vFeL53CJVCnh6Qi9nA=="],
-
-    "@freesewing/plugin-cutlist": ["@freesewing/plugin-cutlist@3.0.0-alpha.0", "", { "peerDependencies": { "@freesewing/core": "^3.0.0-alpha.0" } }, "sha512-AWyjYdAI5LKIFBr0FoI4oFb9WC9WkT3cZba/nqAekBytYzJtcD6YeMbjIgH1RzTwjq8NEuqjVXck5JprgxnCpA=="],
-
-    "@freesewing/plugin-dimension": ["@freesewing/plugin-dimension@2.22.2", "", { "peerDependencies": { "@freesewing/core": "^2.22.2" } }, "sha512-f5FpWyMN+rjrcOTQqsf2DlAdeJkHM06treUqB7z/J95lnantg0BqeVxXDQL1Nb54Ngfv1TilRstTO8pufcDyPg=="],
 
     "@freesewing/plugin-flip": ["@freesewing/plugin-flip@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-Ceu4S6Q1mk7IWNQtsRRSWHUypo8lfjhpEJ+Xhsh3Z22vg+Nyp0IVI4K5ZYYa+wkxHoCgKn7DKn9a8iMbVmhVZg=="],
 
     "@freesewing/plugin-gore": ["@freesewing/plugin-gore@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-3cwMQ5ddHpAxiAyoMn4aoRnJ10x09BtPnBOUzAVevMy0DyYIdEjn3O0/DmBfzR83dzDnHTZ5oVWqluZqhVAEHg=="],
-
-    "@freesewing/plugin-grainline": ["@freesewing/plugin-grainline@2.22.2", "", { "peerDependencies": { "@freesewing/core": "^2.22.2" } }, "sha512-WxmPydgE3UhmdLvrd4F8EvAYLxBxGP8Uk/24HbPYeEnC8kjTR+JyFxSzfAQRWiKXfrd4jYUGCe3sVXO0ZmqAEA=="],
 
     "@freesewing/plugin-measurements": ["@freesewing/plugin-measurements@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-xj2sGGFJMmJWCujK6ujS9CgZSPLI9o6cd3caCqjcKTDeOl3jjUoRSRx9kZrq6dFhiSevZb8HXvvn+CEuHXCB1g=="],
 
@@ -282,11 +270,7 @@
 
     "@freesewing/plugin-round": ["@freesewing/plugin-round@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-ziQP+H0h5b1fbsMFF7jm2VljCPd4lFDSxp3nSecKWFXAu7g6b8ctESCFpG09uyCXcXfy9205W52CL5r6B0ar8w=="],
 
-    "@freesewing/plugin-scalebox": ["@freesewing/plugin-scalebox@2.22.2", "", { "peerDependencies": { "@freesewing/core": "^2.22.2" } }, "sha512-wChe0JnBtu+3ANNzpvaI5fEtQa2FKwzJlgkNt2/NAAqPSNzaaaAG5Jd3mLgkmqLD99bsTwJ1ar72CIDPI5Z7IA=="],
-
     "@freesewing/plugin-sprinkle": ["@freesewing/plugin-sprinkle@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-tJruT0NmGrIejVodAboiYAuj6qbHpkdx3tISohSc4YHWEtddkD+1MzDNL0ts5TgpyP/3ywgbAhwYjn9yLpPCHQ=="],
-
-    "@freesewing/plugin-title": ["@freesewing/plugin-title@2.22.2", "", { "peerDependencies": { "@freesewing/core": "^2.22.2" } }, "sha512-F2zcRtQZS+lMZlA+fEP1HVVdFa/cm9w0bw+UKWwlsbmlw0GxU7m1fWB2brmWGooQmDDUskHYnHmz3LKfynuCyg=="],
 
     "@freesewing/plugin-transform": ["@freesewing/plugin-transform@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-CgLyOvdeZCkWazattimBvKIg8U4KBrc+8kq8hGp91aAkItQIlOQXVLtw6w3lEp/h8Mw+lo+bkknf41t7fD++IQ=="],
 
@@ -306,15 +290,13 @@
 
     "@freesewing/teagan": ["@freesewing/teagan@4.10.1", "", { "peerDependencies": { "@freesewing/brian": "4.10.1", "@freesewing/core": "4.10.1", "@freesewing/plugin-bust": "4.10.1" } }, "sha512-jfnAEQi/h24QlGRKiff8pgMI1hTeIRFjOK8V4Cq+hkS9ahOt4C7A+AMUl7KQETIImDHxMQg98nO9NLfceFyiKQ=="],
 
-    "@freesewing/theo": ["@freesewing/theo@2.22.2", "", { "peerDependencies": { "@freesewing/config-helpers": "^2.22.2", "@freesewing/core": "^2.22.2", "@freesewing/plugin-bundle": "^2.22.2" } }, "sha512-0/mTbnAFD1M0ChbFL12wEHHu7EfNeWOekC21tHxzJqDyCP0ZjEnPSMe7k7IXeT3GFsC/Td+ziQN32VtZvJwAUw=="],
-
     "@freesewing/tiberius": ["@freesewing/tiberius@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1" } }, "sha512-49o1HAW2NPJX2SC8K8Kndk/1fOgbUtwTZKGw+cgMN1SGZRZp1ihz0+dHHkoe/B7oh39SNV/s+IZXVA81i3DhOg=="],
 
     "@freesewing/titan": ["@freesewing/titan@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1", "@freesewing/snapseries": "4.10.1" } }, "sha512-zbgyRFZul9eujChwhdC5w7lGm8VfeMmvsQDNhAGmIFTYlKjguN70kMDRnzLLUtxV4u9bdFRg/Yyw08UjCCiQvA=="],
 
     "@freesewing/trayvon": ["@freesewing/trayvon@4.10.1", "", { "peerDependencies": { "@freesewing/core": "4.10.1", "@freesewing/snapseries": "4.10.1" } }, "sha512-j77DihzkSTRaUO9mPCEhLNY/Ff4LN+4V1eiMrXhL60QH1LA3Kpq0wYbkUyeyiPW1zLkoccizpTSZ5Uhzet/KGg=="],
 
-    "@freesewing/ursula": ["@freesewing/ursula@2.22.2", "", { "peerDependencies": { "@freesewing/config-helpers": "^2.22.2", "@freesewing/core": "^2.22.2", "@freesewing/plugin-bundle": "^2.22.2" } }, "sha512-f86koKWWqNEYYqr/uNAVRK3VzAZrDp6QW0PNfWqtGMCoz38Nzt0BvMNWp7EQ4RJLK50hi1Gv39Js/8ptOQBM1Q=="],
+    "@freesewing/utils": ["@freesewing/utils@4.10.1", "", { "dependencies": { "lodash": "^4.17.21", "slugify": "^1.6.6", "tlds": "^1.255.0" } }, "sha512-YLi67QqTJbtmtA3zEYeKcti26KKm7zVqB5qdcLkQOgAYKmYF9uiqN8BGtuGDXIT4iFUIAOTiVL2hfjweofnFxw=="],
 
     "@freesewing/wahid": ["@freesewing/wahid@4.10.1", "", { "peerDependencies": { "@freesewing/brian": "4.10.1", "@freesewing/core": "4.10.1", "@freesewing/plugin-bust": "4.10.1" } }, "sha512-tD4AifzPegmIZWrifh6xS8fAxm1+Zqm/ner+nONA0XLDRUFRw6adRXvtMNQ1WJeik0KFTGTjYFlJfCjf7zm45g=="],
 
@@ -754,6 +736,8 @@
 
     "locate-path": ["locate-path@6.0.0", "", { "dependencies": { "p-locate": "^5.0.0" } }, "sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw=="],
 
+    "lodash": ["lodash@4.18.1", "", {}, "sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q=="],
+
     "lodash.camelcase": ["lodash.camelcase@4.3.0", "", {}, "sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA=="],
 
     "lodash.clonedeep": ["lodash.clonedeep@4.5.0", "", {}, "sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ=="],
@@ -884,6 +868,8 @@
 
     "side-channel-weakmap": ["side-channel-weakmap@1.0.2", "", { "dependencies": { "call-bound": "^1.0.2", "es-errors": "^1.3.0", "get-intrinsic": "^1.2.5", "object-inspect": "^1.13.3", "side-channel-map": "^1.0.1" } }, "sha512-WPS/HvHQTYnHisLo9McqBHOJk2FkHO/tlpvldyrnem4aeQp4hai3gythswg6p01oSoTl58rcpiFAjF2br2Ak2A=="],
 
+    "slugify": ["slugify@1.6.9", "", {}, "sha512-vZ7rfeehZui7wQs438JXBckYLkIIdfHOXsaVEUMyS5fHo1483l1bMdo0EDSWYclY0yZKFOipDy4KHuKs6ssvdg=="],
+
     "source-map-js": ["source-map-js@1.2.1", "", {}, "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA=="],
 
     "stop-iteration-iterator": ["stop-iteration-iterator@1.1.0", "", { "dependencies": { "es-errors": "^1.3.0", "internal-slot": "^1.1.0" } }, "sha512-eLoXW/DHyl62zxY4SCaIgnRhuMr6ri4juEYARS8E6sCEqzKpOiE521Ucofdx+KnDZl5xmvGYaaKCk5FEOxJCoQ=="],
@@ -913,6 +899,8 @@
     "tapable": ["tapable@2.3.3", "", {}, "sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A=="],
 
     "tinyglobby": ["tinyglobby@0.2.17", "", { "dependencies": { "fdir": "^6.5.0", "picomatch": "^4.0.4" } }, "sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g=="],
+
+    "tlds": ["tlds@1.261.0", "", { "bin": { "tlds": "bin.js" } }, "sha512-QXqwfEl9ddlGBaRFXIvNKK6OhipSiLXuRuLJX5DErz0o0Q0rYxulWLdFryTkV5PkdZct5iMInwYEGe/eR++1AA=="],
 
     "tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
