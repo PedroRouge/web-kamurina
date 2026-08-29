@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CATALOGO_MOLDES } from '../utils/molderiaCatalog';
 import { trazarMoldeSeguro } from '../utils/molderiaEngine';
+import { exportarMoldeAPdfA4 } from '../utils/molderiaPdfGenerator';
 
 export default function MolderiaView({
   clientes = [],
@@ -17,6 +18,7 @@ export default function MolderiaView({
   const [conCotas, setConCotas] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [cargando, setCargando] = useState(false);
+  const [generandoPdf, setGenerandoPdf] = useState(false);
   const [errorTrazado, setErrorTrazado] = useState(null);
   const [svgRenderizado, setSvgRenderizado] = useState('');
 
@@ -112,10 +114,33 @@ export default function MolderiaView({
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    if (mostrarToast) mostrarToast("Archivo SVG del molde descargado correctamente");
+    if (mostrarToast) mostrarToast("Archivo SVG del molde descargado");
   };
 
-  // Imprimir molde a escala 1:1
+  // Descargar PDF A4 Paginado Multihioja (Estilo FreeSewing con guías de ensamble y carátula)
+  const descargarPdfPaginado = async () => {
+    if (!svgRenderizado) return;
+    try {
+      setGenerandoPdf(true);
+      if (mostrarToast) mostrarToast("Generando PDF A4 paginado con guías de ensamble...");
+
+      await exportarMoldeAPdfA4({
+        svgString: svgRenderizado,
+        nombreMolde: moldeActivo.nombre,
+        nombreCliente: clienteActivo?.nombre || 'Medidas Estándar',
+        piezas: moldeActivo.piezas || []
+      });
+
+      if (mostrarToast) mostrarToast("¡PDF A4 listo para imprimir y cortar!");
+    } catch (err) {
+      console.error("Error al generar PDF:", err);
+      if (mostrarToast) mostrarToast("Error al generar el PDF. Reintentando...");
+    } finally {
+      setGenerandoPdf(false);
+    }
+  };
+
+  // Imprimir molde directo
   const imprimirMolde = () => {
     if (!svgRenderizado) return;
     const ventanaImpresion = window.open('', '_blank');
@@ -171,11 +196,11 @@ export default function MolderiaView({
             <span className="text-2xl">📐</span>
             <h2 className="text-2xl font-bold text-white tracking-tight">Moldería Automática & Graduación</h2>
             <span className="bg-stone-800 text-stone-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-stone-700">
-              Patronaje Digital
+              Patronaje Digital A4
             </span>
           </div>
           <p className="text-stone-400 text-xs">
-            Generador paramétrico de patrones a medida exacta para corte y confección en alta costura.
+            Generador paramétrico de patrones a medida exacta para corte y confección en alta costura con despiece holgado.
           </p>
         </div>
 
@@ -184,7 +209,7 @@ export default function MolderiaView({
             onClick={() => cambiarVista('clientes')}
             className="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs px-4 py-2.5 rounded-xl border border-stone-700 transition-colors font-medium whitespace-nowrap"
           >
-            👥 Gestión Clientes
+            👥 Ver Lista Clientes
           </button>
         </div>
       </div>
@@ -226,7 +251,7 @@ export default function MolderiaView({
             </select>
 
             {clienteActivo ? (
-              <div className="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80 text-xs space-y-1.5">
+              <div className="bg-stone-950/60 p-3.5 rounded-xl border border-stone-800/80 text-xs space-y-1.5">
                 <div className="flex justify-between text-stone-300">
                   <span className="text-stone-500">Cliente:</span>
                   <span className="font-semibold">{clienteActivo.nombre}</span>
@@ -242,6 +267,10 @@ export default function MolderiaView({
                 <div className="flex justify-between text-stone-300">
                   <span className="text-stone-500">Cadera:</span>
                   <span>{clienteActivo.medidas?.['Contorno de Cadera'] || '—'} cm</span>
+                </div>
+                <div className="flex justify-between text-stone-300">
+                  <span className="text-stone-500">Largo Espalda:</span>
+                  <span>{clienteActivo.medidas?.['Largo de Espalda'] || '—'} cm</span>
                 </div>
               </div>
             ) : (
@@ -281,7 +310,7 @@ export default function MolderiaView({
               />
             </div>
 
-            {/* Selector Desplegable Agrupado */}
+            {/* Selector Desplegable */}
             <select
               value={moldeId}
               onChange={(e) => setMoldeId(e.target.value)}
@@ -295,7 +324,7 @@ export default function MolderiaView({
             </select>
 
             {/* Ficha descriptiva del molde seleccionado */}
-            <div className="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80 text-xs space-y-2">
+            <div className="bg-stone-950/60 p-3.5 rounded-xl border border-stone-800/80 text-xs space-y-2">
               <div className="font-semibold text-white flex items-center gap-1.5">
                 <span>{moldeActivo.icono}</span>
                 <span>{moldeActivo.nombre}</span>
@@ -347,22 +376,22 @@ export default function MolderiaView({
                   className="rounded bg-stone-900 border-stone-700 text-white focus:ring-0 w-4 h-4 cursor-pointer"
                 />
                 <div>
-                  <div className="font-medium text-white">Cotas y Medidas en Pantalla</div>
-                  <div className="text-[10px] text-stone-500">Muestra cotas, hilo de tela y piquetes</div>
+                  <div className="font-medium text-white">Rótulos y Hilo de Tela</div>
+                  <div className="text-[10px] text-stone-500">Muestra sentido de fibra y nombres de piezas</div>
                 </div>
               </label>
             </div>
           </div>
         </div>
 
-        {/* Columna Derecha: Área de Renderizado SVG y Manejo de Errores */}
+        {/* Columna Derecha: Área de Renderizado SVG y Exportación PDF */}
         <div className="lg:col-span-2 space-y-4">
           {/* Barra de Acciones del Visor */}
-          <div className="bg-stone-900/50 backdrop-blur-md border border-stone-800 p-3 rounded-2xl flex flex-wrap justify-between items-center gap-3">
+          <div className="bg-stone-900/50 backdrop-blur-md border border-stone-800 p-3.5 rounded-2xl flex flex-wrap justify-between items-center gap-3">
             <div className="flex items-center gap-2">
               <span className="text-xs text-stone-400 font-medium">Zoom:</span>
               <button
-                onClick={() => setZoom(z => Math.max(0.4, Number((z - 0.15).toFixed(2))))}
+                onClick={() => setZoom(z => Math.max(0.3, Number((z - 0.15).toFixed(2))))}
                 className="bg-stone-800 hover:bg-stone-700 text-white w-7 h-7 rounded-lg text-xs font-bold transition-colors"
                 title="Alejar"
               >
@@ -387,20 +416,40 @@ export default function MolderiaView({
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={imprimirMolde}
-                disabled={!svgRenderizado || cargando}
-                className="bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 px-3 py-1.5 rounded-xl text-xs font-bold border border-stone-700 flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                🖨️ Imprimir / PDF
-              </button>
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 onClick={descargarSVG}
                 disabled={!svgRenderizado || cargando}
-                className="bg-white hover:bg-stone-200 disabled:opacity-40 text-stone-950 px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 px-3 py-1.5 rounded-xl text-xs font-semibold border border-stone-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Descargar gráfico vectorial SVG"
               >
-                ⬇️ Descargar SVG
+                🖼️ SVG
+              </button>
+
+              <button
+                onClick={imprimirMolde}
+                disabled={!svgRenderizado || cargando}
+                className="bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 px-3 py-1.5 rounded-xl text-xs font-semibold border border-stone-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                🖨️ Imprimir
+              </button>
+
+              {/* Botón Destacado: PDF Paginado A4 Multihioja */}
+              <button
+                onClick={descargarPdfPaginado}
+                disabled={!svgRenderizado || cargando || generandoPdf}
+                className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-lg shadow-sky-950 flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {generandoPdf ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Generando A4...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📄 Descargar PDF A4 Paginado</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -408,7 +457,7 @@ export default function MolderiaView({
           {/* Lienzo Principal del Molde */}
           <div 
             ref={svgContainerRef}
-            className="bg-stone-950 border border-stone-800 rounded-3xl p-4 md:p-6 min-h-[550px] flex items-center justify-center relative overflow-hidden shadow-inner"
+            className="bg-stone-950 border border-stone-800 rounded-3xl p-4 md:p-6 min-h-[580px] flex items-center justify-center relative overflow-hidden shadow-inner"
           >
             {/* Estado de Carga */}
             {cargando && (
@@ -422,12 +471,12 @@ export default function MolderiaView({
 
             {/* Advertencia si faltan medidas del cliente */}
             {!validacion.esValido && clienteActivo && (
-              <div className="absolute top-4 right-4 z-10 max-w-xs bg-amber-950/90 border border-amber-500/40 rounded-xl p-3 text-xs space-y-2 backdrop-blur-md">
+              <div className="absolute top-4 right-4 z-10 max-w-xs bg-amber-950/90 border border-amber-500/40 rounded-xl p-3 text-xs space-y-2 backdrop-blur-md shadow-2xl">
                 <div className="font-bold text-amber-300 flex items-center gap-1">
-                  <span>⚠️</span> Medidas sugeridas:
+                  <span>⚠️</span> Medidas sugeridas para este molde:
                 </div>
-                <p className="text-stone-300 text-[11px]">
-                  Falta completar: {validacion.faltantes.join(', ')}. Se trazó con valores estándar para previsualizar.
+                <p className="text-stone-300 text-[11px] leading-relaxed">
+                  Falta completar: <strong>{validacion.faltantes.join(', ')}</strong>. Se trazó con valores estándar para previsualizar.
                 </p>
                 <button
                   onClick={irAEditarCliente}
@@ -467,10 +516,10 @@ export default function MolderiaView({
           <div className="bg-stone-900/30 border border-stone-800/80 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[11px] text-stone-400">
             <div className="flex items-center gap-2">
               <span className="text-sky-400">●</span>
-              <span>Graduación matemática al 100% vectorial con caja de escala 10x10 cm</span>
+              <span>El PDF descargado incluye carátula, cuadro de calibración 10x10 cm y cuadrícula de ensamble numerada (Filas / Columnas).</span>
             </div>
             <div className="text-stone-500">
-              💡 Tip: Puedes exportar a SVG para cortar en plotter o abrirlo en Illustrator / Inkscape / Audaces.
+              💡 Imprime siempre en <strong>Tamaño Real (100%)</strong> sin ajustar a página.
             </div>
           </div>
         </div>

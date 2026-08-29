@@ -1,20 +1,11 @@
 /**
  * Catálogo Maestro de Moldería y Patrones Paramétricos
  * 40 patrones profesionales con graduación y trazado a medida
+ * Mapeo estricto con MEDIDAS_LISTA oficial de la aplicación
  */
 
 export const CATALOGO_MOLDES = [
   // --- TOPS, REMERAS Y BLUSAS ---
-  {
-    id: 'aaron',
-    nombre: 'Musculosa Básica / Remera sin Mangas',
-    categoria: 'Tops, Remeras y Blusas',
-    icono: '🎽',
-    descripcion: 'Musculosa entallada clásica con ribetes de sisa y cuello.',
-    genero: 'Unisex / Mujer / Hombre',
-    piezas: ['Delantero (1x al doblez)', 'Espalda (1x al doblez)', 'Ribete Cuello (1x)', 'Ribete Sisa (2x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cuello', 'Ancho de Espalda', 'Largo de Talle']
-  },
   {
     id: 'teagan',
     nombre: 'Remera Básica Clásica (T-Shirt)',
@@ -23,7 +14,17 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Remera de manga corta con cuello redondo elástico.',
     genero: 'Unisex',
     piezas: ['Delantero (1x al doblez)', 'Espalda (1x al doblez)', 'Manga Corta (2x)', 'Ribete Cuello (1x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cuello', 'Ancho de Espalda', 'Largo de Talle', 'Contorno de Brazo']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cuello', 'Ancho de Espalda', 'Largo de Espalda', 'Contorno de Brazo']
+  },
+  {
+    id: 'aaron',
+    nombre: 'Musculosa Básica / Remera sin Mangas',
+    categoria: 'Tops, Remeras y Blusas',
+    icono: '🎽',
+    descripcion: 'Musculosa entallada clásica con ribetes de sisa y cuello.',
+    genero: 'Unisex / Mujer / Hombre',
+    piezas: ['Delantero (1x al doblez)', 'Espalda (1x al doblez)', 'Ribete Cuello (1x)', 'Ribete Sisa (2x)'],
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cuello', 'Ancho de Espalda', 'Largo de Espalda']
   },
   {
     id: 'diana',
@@ -33,7 +34,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Elegante blusa femenina con cuello drapeado en cascada.',
     genero: 'Mujer',
     piezas: ['Delantero Drapeado (1x)', 'Espalda (1x)', 'Banda de Cuello (1x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Largo de Talle', 'Altura de Busto']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Largo de Espalda', 'Altura de Busto']
   },
   {
     id: 'tamiko',
@@ -43,7 +44,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Top de confección geométrica con cruce frontal estilo kimono.',
     genero: 'Mujer',
     piezas: ['Cuerpo Kimono (1x)', 'Cinturón Ajuste (1x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Largo de Talle']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Largo de Espalda']
   },
   {
     id: 'brian',
@@ -53,7 +54,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Patrón base de cuerpo superior sin pinzas para transformaciones.',
     genero: 'Unisex',
     piezas: ['Delantero Base (1x)', 'Espalda Base (1x)', 'Manga Larga Base (2x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cuello', 'Ancho de Espalda', 'Largo de Talle']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cuello', 'Ancho de Espalda', 'Largo de Espalda']
   },
   {
     id: 'breanna',
@@ -63,7 +64,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Patrón base femenino con pinzas de busto y entalle.',
     genero: 'Mujer',
     piezas: ['Delantero con Pinzas (1x)', 'Espalda con Pinzas (1x)', 'Manga Base (2x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Separación de Busto', 'Altura de Busto', 'Largo de Talle']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Separación de Busto', 'Altura de Busto', 'Largo de Espalda']
   },
   {
     id: 'bella',
@@ -105,7 +106,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Chaleco formal con bolsillos ojal y martillo trasero regulable.',
     genero: 'Hombre / Unisex',
     piezas: ['Delantero Sastre (2x)', 'Espalda en Forrería (1x)', 'Bolsillo Ojal (2x)', 'Tiras de Ajuste (2x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Largo de Talle', 'Ancho de Espalda']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Largo de Espalda', 'Ancho de Espalda']
   },
   {
     id: 'jaeger',
@@ -177,7 +178,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Campera deportiva con cierre central y bolsillos laterales.',
     genero: 'Unisex',
     piezas: ['Delantero Abierto (2x)', 'Espalda (1x)', 'Capucha (4x)', 'Manga (2x)', 'Bolsillos (2x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Largo de Talle', 'Largo de Manga']
+    medidasRequeridas: ['Contorno de Busto', 'Largo de Espalda', 'Largo de Manga']
   },
   {
     id: 'carlton',
@@ -209,7 +210,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Pantalón entallado con bolsillos franceses y pretina sastre.',
     genero: 'Hombre / Unisex',
     piezas: ['Delantero Pantalón (2x)', 'Trasero Pantalón (2x)', 'Fondo Bolsillo (4x)', 'Pretina (2x)', 'Pasacintos (1x)'],
-    medidasRequeridas: ['Contorno de Cintura', 'Contorno de Cadera', 'Largo de Pantalón', 'Altura de Tiro']
+    medidasRequeridas: ['Contorno de Cintura', 'Contorno de Cadera', 'Largo de Pantalón', 'Altura Tiro de Pantalón']
   },
   {
     id: 'titan',
@@ -219,7 +220,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Molde base para cualquier desarrollo de pantalón a medida.',
     genero: 'Unisex',
     piezas: ['Delantero Base (2x)', 'Trasero Base (2x)'],
-    medidasRequeridas: ['Contorno de Cintura', 'Contorno de Cadera', 'Largo de Pantalón', 'Altura de Tiro']
+    medidasRequeridas: ['Contorno de Cintura', 'Contorno de Cadera', 'Largo de Pantalón', 'Altura Tiro de Pantalón']
   },
   {
     id: 'paco',
@@ -301,7 +302,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Corset victoriano estructurado con múltiples paneles y canales de ballena.',
     genero: 'Mujer',
     piezas: ['Panel 1 Centro Delantero (2x)', 'Panel 2 Lateral Delantero (2x)', 'Panel 3 Lateral Espalda (2x)', 'Panel 4 Centro Espalda (2x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Bajo Busto', 'Altura de Busto']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Altura de Busto']
   },
   {
     id: 'lumina',
@@ -331,7 +332,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Túnica drapeada elegante con caída continua de hombros.',
     genero: 'Unisex',
     piezas: ['Túnica Frontal (1x)', 'Túnica Trasera (1x)', 'Cinto Ribete (1x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cadera', 'Largo de Talle']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cadera', 'Largo de Espalda']
   },
 
   // --- ACCESORIOS, GORROS Y COMPLEMENTOS ---
@@ -343,7 +344,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Sombrero pescador moderno de tres piezas con ala pespunteada.',
     genero: 'Unisex',
     piezas: ['Corona Superior (1x)', 'Pared Lateral (2x)', 'Ala Pescador (2x)'],
-    medidasRequeridas: ['Contorno de Cabeza']
+    medidasRequeridas: ['Contorno de Cuello']
   },
   {
     id: 'holmes',
@@ -353,7 +354,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Gorra clásica con doble visera y orejeras abatibles.',
     genero: 'Unisex',
     piezas: ['Gajos Corona (6x)', 'Viseras Frontal/Trasera (4x)', 'Orejeras (4x)'],
-    medidasRequeridas: ['Contorno de Cabeza']
+    medidasRequeridas: ['Contorno de Cuello']
   },
   {
     id: 'albert',
@@ -363,7 +364,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Delantal profesional con pechera, bolsillos divididos y cintas cruzadas.',
     genero: 'Unisex',
     piezas: ['Cuerpo Delantal (1x)', 'Pechera (1x)', 'Bolsillo Compartimentado (1x)', 'Cintas Cuello/Cintura (3x)'],
-    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Largo de Talle']
+    medidasRequeridas: ['Contorno de Busto', 'Contorno de Cintura', 'Largo de Espalda']
   },
   {
     id: 'hi',
@@ -383,7 +384,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Máscara ergonómica de tela con ajuste nasal y mentonera.',
     genero: 'Unisex',
     piezas: ['Panel Lateral (4x)', 'Puente Nariz (2x)'],
-    medidasRequeridas: ['Contorno de Cabeza']
+    medidasRequeridas: ['Contorno de Cuello']
   },
   {
     id: 'florent',
@@ -393,7 +394,7 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Boina tradicional con visera curva oculta y forro.',
     genero: 'Unisex',
     piezas: ['Tapa Superior (1x)', 'Laterales (2x)', 'Visera (2x)'],
-    medidasRequeridas: ['Contorno de Cabeza']
+    medidasRequeridas: ['Contorno de Cuello']
   },
   {
     id: 'shin',
@@ -403,6 +404,6 @@ export const CATALOGO_MOLDES = [
     descripcion: 'Protector de pierna y calzado con elásticos y cierres.',
     genero: 'Unisex',
     piezas: ['Cuerpo Polaina (2x)', 'Refuerzo Empeine (2x)', 'Correa Base (2x)'],
-    medidasRequeridas: ['Contorno de Tobillo']
+    medidasRequeridas: ['Altura de Rodilla']
   }
 ];
