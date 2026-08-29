@@ -1,12 +1,8 @@
 /**
- * Generador de PDF Paginado Multihioja A4 / Letter para Patronaje y Costura Real
- * - Genera SVG limpio vectorial / renderizado canvas nativo asegurando que no queden páginas en blanco
- * - Cada hoja A4 tiene:
- *   1. Cuadrícula de coordenadas clara (ej: Fila 1 - Columna 2, Fila 1 - Columna 3)
- *   2. Solapas de unión de 10mm (con texto "Pegar borde con..." / "Unir con...")
- *   3. Cruces de registro (corte) en las 4 esquinas
- *   4. Número de página grande y visible en el centro/esquina
- *   5. Guía de ensamble visual en la Carátula (Página 1) con cuadro de calibración 10x10 cm
+ * Generador de PDF Paginado Multihioja A4 para Patronaje y Costura Real
+ * - Genera un documento PDF profesional con carátula de ensamble y páginas de corte a escala 1:1 real (100%).
+ * - Cuadro de calibración de 10x10 cm exactos en la portada para verificar con regla.
+ * - Cruces de registro (+), líneas de corte punteadas y márgenes de unión claros en cada hoja A4.
  */
 
 import jsPDF from 'jspdf';
@@ -38,13 +34,12 @@ export async function exportarMoldeAPdfA4({
     }
   }
 
-  // Preparamos un SVG optimizado para impresión: fondo blanco, líneas oscuras de alta nitidez
-  // Clonamos el SVG y cambiamos atributos de visualización
+  // Preparar un SVG optimizado para impresión: fondo blanco, líneas oscuras de alta nitidez
   const svgClon = svgEl.cloneNode(true);
   svgClon.setAttribute('width', String(vbWidth));
   svgClon.setAttribute('height', String(vbHeight));
   
-  // Reemplazar fondo oscuro por blanco
+  // Reemplazar fondos oscuros por blanco
   const rects = svgClon.querySelectorAll('rect');
   rects.forEach(r => {
     const fill = r.getAttribute('fill');
@@ -87,34 +82,29 @@ export async function exportarMoldeAPdfA4({
   // Dimensiones A4 en milímetros (210 x 297 mm)
   const a4WidthMm = 210;
   const a4HeightMm = 297;
-  const marginMm = 15; // 15mm margen exterior
-  const usableWidthMm = a4WidthMm - marginMm * 2; // 180mm
-  const usableHeightMm = a4HeightMm - marginMm * 2; // 267mm
+  const marginMm = 15; // 15mm de margen técnico en hoja
+  const usableWidthMm = a4WidthMm - marginMm * 2; // 180mm área útil
+  const usableHeightMm = a4HeightMm - marginMm * 2; // 267mm área útil
 
-  // Escala real: En nuestro motor SVG, 1 unidad = 1 mm (o 1000px = 1000mm = 100cm)
-  // El ancho total real del patrón en mm es vbWidth
-  // El alto total real del patrón en mm es vbHeight
   const patternWidthMm = vbWidth;
   const patternHeightMm = vbHeight;
 
-  // Calculamos cuántas hojas se necesitan
+  // Cuadrícula de hojas A4
   const cols = Math.max(1, Math.ceil(patternWidthMm / usableWidthMm));
   const rows = Math.max(1, Math.ceil(patternHeightMm / usableHeightMm));
   const totalPaginasPatron = cols * rows;
   const totalHojas = 1 + totalPaginasPatron; // 1 portada + páginas
 
-  // Renderizamos el SVG completo en un Canvas de alta resolución (3.78 píxeles por mm ≈ 96 DPI * 3 = 300 DPI)
-  const pxPerMm = 3.7795; // 96 DPI estándar
-  const renderScale = 2.0; // Factor de nitidez
-  const canvasWidth = Math.round(vbWidth * (pxPerMm / 1) * (renderScale / 3.7795));
-  const canvasHeight = Math.round(vbHeight * (pxPerMm / 1) * (renderScale / 3.7795));
+  // Renderizar en Canvas a 2 píxeles por milímetro (escala nítida sin pixelado)
+  const renderScale = 2.0;
+  const canvasWidth = Math.max(800, Math.round(patternWidthMm * renderScale));
+  const canvasHeight = Math.max(600, Math.round(patternHeightMm * renderScale));
 
   const mainCanvas = document.createElement('canvas');
-  mainCanvas.width = Math.max(800, canvasWidth);
-  mainCanvas.height = Math.max(600, canvasHeight);
+  mainCanvas.width = canvasWidth;
+  mainCanvas.height = canvasHeight;
   const mainCtx = mainCanvas.getContext('2d');
   
-  // Fondo blanco nítido
   mainCtx.fillStyle = '#ffffff';
   mainCtx.fillRect(0, 0, mainCanvas.width, mainCanvas.height);
   mainCtx.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
@@ -126,7 +116,7 @@ export async function exportarMoldeAPdfA4({
   });
 
   // =========================================================================
-  // PÁGINA 1: PORTADA TÉCNICA, CUADRO DE CALIBRACIÓN Y PLANO DE UNIÓN DE HOJAS
+  // PÁGINA 1: PORTADA TÉCNICA, CUADRO DE CALIBRACIÓN Y PLANO DE MONTAJE
   // =========================================================================
   
   // Franja Superior
@@ -165,7 +155,6 @@ export async function exportarMoldeAPdfA4({
   pdf.setLineWidth(1);
   pdf.rect(calX, calY, 95, 95, 'S');
 
-  // Contenido del Cuadro de Calibración
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(13);
   pdf.setTextColor(2, 132, 199);
@@ -182,7 +171,7 @@ export async function exportarMoldeAPdfA4({
   pdf.text('3. Si coincide con 10 cm exactos, la graduación', calX + 47.5, calY + 70, { align: 'center' });
   pdf.text('del cuerpo y costuras es 100% perfecta.', calX + 47.5, calY + 76, { align: 'center' });
 
-  // 2. Instrucciones Claras de Unión y Corte (Lado Derecho)
+  // 2. Instrucciones de Unión (Lado Derecho)
   const infoX = marginMm + 102;
   const infoY = 49;
   pdf.setFillColor(241, 245, 249);
@@ -199,25 +188,25 @@ export async function exportarMoldeAPdfA4({
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(8.5);
   pdf.setTextColor(51, 65, 85);
-  pdf.text('1. Imprima todas las hojas a tamaño 100%.', infoX + 6, infoY + 22);
+  pdf.text('1. Imprima todas las hojas a escala 100% (sin ajustar).', infoX + 6, infoY + 22);
   pdf.text('2. En cada hoja verá un marco punteado de corte.', infoX + 6, infoY + 30);
   pdf.text('3. Recorte el borde DERECHO e INFERIOR de cada hoja.', infoX + 6, infoY + 38);
   pdf.text('4. Superponga las hojas usando las marcas de cruz (+).', infoX + 6, infoY + 46);
   pdf.text('5. Pegue con cinta siguiendo la cuadrícula inferior.', infoX + 6, infoY + 54);
-  pdf.text('6. Los contornos ya incluyen 1 cm de costura.', infoX + 6, infoY + 62);
-  pdf.text('7. "Doblez de tela" = cortar con la tela doblada.', infoX + 6, infoY + 70);
+  pdf.text('6. Los contornos ya incluyen 1 cm de margen de costura.', infoX + 6, infoY + 62);
+  pdf.text('7. "Doblez de tela" = cortar con la tela doblada al lomo.', infoX + 6, infoY + 70);
 
   // 3. Despiece de Piezas
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(11);
   pdf.setTextColor(15, 23, 42);
-  pdf.text('PIEZAS DEL PATRÓN:', marginMm, 155);
+  pdf.text('DESPIECE INCLUIDO EN ESTE PATRÓN:', marginMm, 155);
 
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(9);
   pdf.setTextColor(51, 65, 85);
   let yP = 163;
-  (piezas.length > 0 ? piezas : ['Delantero (1x al doblez)', 'Espalda (1x al doblez)', 'Mangas / Vistas (2x)']).forEach((p) => {
+  (piezas.length > 0 ? piezas : ['Cuerpo Principal (2x)', 'Vistas y Complementos (2x)']).forEach((p) => {
     pdf.text(`• ${p}`, marginMm + 4, yP);
     yP += 7;
   });
@@ -230,8 +219,8 @@ export async function exportarMoldeAPdfA4({
 
   const maxGridWidth = usableWidthMm;
   const maxGridHeight = 70;
-  const cellW = Math.min(32, (maxGridWidth - (cols - 1) * 3) / cols);
-  const cellH = Math.min(24, (maxGridHeight - (rows - 1) * 3) / rows);
+  const cellW = Math.min(36, (maxGridWidth - (cols - 1) * 3) / cols);
+  const cellH = Math.min(26, (maxGridHeight - (rows - 1) * 3) / rows);
   const startGX = marginMm;
   const startGY = 203;
 
@@ -286,24 +275,34 @@ export async function exportarMoldeAPdfA4({
       );
 
       // Calcular exactamente el recorte en píxeles del canvas
-      const srcX = (c * usableWidthMm / patternWidthMm) * mainCanvas.width;
-      const srcY = (r * usableHeightMm / patternHeightMm) * mainCanvas.height;
-      const srcW = (usableWidthMm / patternWidthMm) * mainCanvas.width;
-      const srcH = (usableHeightMm / patternHeightMm) * mainCanvas.height;
+      const xMm = c * usableWidthMm;
+      const yMm = r * usableHeightMm;
+      const wMm = Math.min(usableWidthMm, Math.max(0, patternWidthMm - xMm));
+      const hMm = Math.min(usableHeightMm, Math.max(0, patternHeightMm - yMm));
+
+      const srcX = Math.round(xMm * renderScale);
+      const srcY = Math.round(yMm * renderScale);
+      const srcW = Math.round(wMm * renderScale);
+      const srcH = Math.round(hMm * renderScale);
 
       // Crear tile canvas de alta nitidez
       const tileCanvas = document.createElement('canvas');
-      tileCanvas.width = Math.max(300, Math.round(srcW));
-      tileCanvas.height = Math.max(300, Math.round(srcH));
+      tileCanvas.width = Math.round(usableWidthMm * renderScale);
+      tileCanvas.height = Math.round(usableHeightMm * renderScale);
       const tileCtx = tileCanvas.getContext('2d');
+      
       tileCtx.fillStyle = '#ffffff';
       tileCtx.fillRect(0, 0, tileCanvas.width, tileCanvas.height);
 
-      tileCtx.drawImage(
-        mainCanvas,
-        srcX, srcY, srcW, srcH,
-        0, 0, tileCanvas.width, tileCanvas.height
-      );
+      if (srcW > 0 && srcH > 0 && srcX < mainCanvas.width && srcY < mainCanvas.height) {
+        const clampedW = Math.min(srcW, mainCanvas.width - srcX);
+        const clampedH = Math.min(srcH, mainCanvas.height - srcY);
+        tileCtx.drawImage(
+          mainCanvas,
+          srcX, srcY, clampedW, clampedH,
+          0, 0, clampedW, clampedH
+        );
+      }
 
       const tileDataUrl = tileCanvas.toDataURL('image/jpeg', 0.96);
 

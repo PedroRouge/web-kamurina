@@ -85,6 +85,7 @@ export default function MolderiaView({
       try {
         const svg = trazarMoldeSeguro(moldeActivo.id, medidasCliente, {
           clienteNombre: clienteActivo?.nombre || 'Medida Estándar',
+          moldeNombre: moldeActivo.nombre,
           conMargenCostura,
           conCotas
         });
