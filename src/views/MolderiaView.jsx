@@ -134,49 +134,10 @@ export default function MolderiaView({
       if (mostrarToast) mostrarToast("¡PDF A4 listo para imprimir y cortar!");
     } catch (err) {
       console.error("Error al generar PDF:", err);
-      if (mostrarToast) mostrarToast("Error al generar el PDF. Reintentando...");
+      if (mostrarToast) mostrarToast("Error al generar el PDF.");
     } finally {
       setGenerandoPdf(false);
     }
-  };
-
-  // Imprimir molde directo
-  const imprimirMolde = () => {
-    if (!svgRenderizado) return;
-    const ventanaImpresion = window.open('', '_blank');
-    if (!ventanaImpresion) {
-      if (mostrarToast) mostrarToast("⚠️ Habilita las ventanas emergentes para imprimir");
-      return;
-    }
-    ventanaImpresion.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Patrón ${moldeActivo.nombre} - ${clienteActivo?.nombre || 'Estándar'}</title>
-          <style>
-            @page { size: auto; margin: 10mm; }
-            body { font-family: sans-serif; margin: 0; padding: 20px; color: #000; background: #fff; }
-            h1 { font-size: 18px; margin-bottom: 4px; }
-            p { font-size: 12px; margin-bottom: 16px; color: #555; }
-            svg { width: 100%; height: auto; display: block; }
-            .header-info { border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px; }
-          </style>
-        </head>
-        <body>
-          <div class="header-info">
-            <h1>Atelier Kamurina — ${moldeActivo.nombre}</h1>
-            <p><strong>Cliente:</strong> ${clienteActivo?.nombre || 'Medidas Estándar'} | <strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
-          </div>
-          ${svgRenderizado}
-          <script>
-            window.onload = function() {
-              window.print();
-            }
-          </script>
-        </body>
-      </html>
-    `);
-    ventanaImpresion.document.close();
   };
 
   // Ir a editar cliente
@@ -207,7 +168,7 @@ export default function MolderiaView({
         <div className="flex items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => cambiarVista('clientes')}
-            className="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs px-4 py-2.5 rounded-xl border border-stone-700 transition-colors font-medium whitespace-nowrap"
+            className="bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs px-4 py-2.5 rounded-xl border border-stone-700 transition-colors font-medium whitespace-nowrap cursor-pointer"
           >
             👥 Ver Lista Clientes
           </button>
@@ -227,7 +188,7 @@ export default function MolderiaView({
               {clienteActivo && (
                 <button
                   onClick={irAEditarCliente}
-                  className="text-[11px] text-amber-400 hover:text-amber-300 underline font-medium"
+                  className="text-[11px] text-amber-400 hover:text-amber-300 underline font-medium cursor-pointer"
                 >
                   ✏️ Editar Medidas
                 </button>
@@ -392,7 +353,7 @@ export default function MolderiaView({
               <span className="text-xs text-stone-400 font-medium">Zoom:</span>
               <button
                 onClick={() => setZoom(z => Math.max(0.3, Number((z - 0.15).toFixed(2))))}
-                className="bg-stone-800 hover:bg-stone-700 text-white w-7 h-7 rounded-lg text-xs font-bold transition-colors"
+                className="bg-stone-800 hover:bg-stone-700 text-white w-7 h-7 rounded-lg text-xs font-bold transition-colors cursor-pointer"
                 title="Alejar"
               >
                 -
@@ -402,14 +363,14 @@ export default function MolderiaView({
               </span>
               <button
                 onClick={() => setZoom(z => Math.min(2.5, Number((z + 0.15).toFixed(2))))}
-                className="bg-stone-800 hover:bg-stone-700 text-white w-7 h-7 rounded-lg text-xs font-bold transition-colors"
+                className="bg-stone-800 hover:bg-stone-700 text-white w-7 h-7 rounded-lg text-xs font-bold transition-colors cursor-pointer"
                 title="Acercar"
               >
                 +
               </button>
               <button
                 onClick={() => setZoom(1)}
-                className="bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1 rounded-lg text-xs transition-colors"
+                className="bg-stone-800 hover:bg-stone-700 text-stone-300 px-2.5 py-1 rounded-lg text-xs transition-colors cursor-pointer"
                 title="Restablecer Zoom"
               >
                 100%
@@ -426,15 +387,7 @@ export default function MolderiaView({
                 🖼️ SVG
               </button>
 
-              <button
-                onClick={imprimirMolde}
-                disabled={!svgRenderizado || cargando}
-                className="bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 px-3 py-1.5 rounded-xl text-xs font-semibold border border-stone-700 flex items-center gap-1.5 transition-colors cursor-pointer"
-              >
-                🖨️ Imprimir
-              </button>
-
-              {/* Botón Destacado: PDF Paginado A4 Multihioja */}
+              {/* Botón Principal: PDF Paginado A4 Multihioja */}
               <button
                 onClick={descargarPdfPaginado}
                 disabled={!svgRenderizado || cargando || generandoPdf}
@@ -443,7 +396,7 @@ export default function MolderiaView({
                 {generandoPdf ? (
                   <>
                     <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Generando A4...</span>
+                    <span>Generando A4 Paginado...</span>
                   </>
                 ) : (
                   <>
@@ -480,7 +433,7 @@ export default function MolderiaView({
                 </p>
                 <button
                   onClick={irAEditarCliente}
-                  className="text-amber-400 hover:text-amber-300 underline font-semibold text-[11px]"
+                  className="text-amber-400 hover:text-amber-300 underline font-semibold text-[11px] cursor-pointer"
                 >
                   ✏️ Completar Medidas Ahora
                 </button>
@@ -495,7 +448,7 @@ export default function MolderiaView({
                 <p className="text-stone-400 text-xs leading-relaxed">{errorTrazado}</p>
                 <button
                   onClick={irAEditarCliente}
-                  className="bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded-xl text-xs font-semibold"
+                  className="bg-stone-800 hover:bg-stone-700 text-stone-200 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer"
                 >
                   Revisar Medidas del Cliente
                 </button>
