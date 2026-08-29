@@ -1,28 +1,28 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
-  server: {
-    host: '0.0.0.0',
-    port: 3000,
-    allowedHosts: true,
-  },
-  preview: {
-    host: '0.0.0.0',
-    port: 3000,
-  },
+  plugins: [react()],
   build: {
-    manifest: 'build-manifest.json',
+    // 1. Aumentamos el límite de la advertencia para que Vercel no se asuste
+    chunkSizeWarningLimit: 5000, 
+    
+    // 2. Le enseñamos a empaquetar las librerías pesadas por separado
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules/firebase/')) {
-            return 'firebase';
+          if (id.includes('node_modules')) {
+            // Mandamos todo lo de Firebase a un archivo aparte
+            if (id.includes('firebase')) {
+              return 'firebase-vendor';
+            }
+            // Mandamos todo el motor de FreeSewing a otro archivo
+            if (id.includes('@freesewing')) {
+              return 'freesewing-vendor';
+            }
+            // El resto de las librerías
+            return 'vendor';
           }
         }
       }
