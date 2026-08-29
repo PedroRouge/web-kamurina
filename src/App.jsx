@@ -39,6 +39,7 @@ import EditarAvioView from './views/EditarAvioView';
 import DetalleAvioView from './views/DetalleAvioView';
 import CalculadoraView from './views/CalculadoraView';
 import GananciasView from './views/GananciasView';
+import MolderiaView from './views/MolderiaView';
 
 const ViewLoadingFallback = () => (
   <div className="py-20 flex justify-center items-center text-stone-500 text-sm italic">
@@ -1320,7 +1321,7 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               handleKeyDownEnter={handleKeyDownEnter}
               setIsSaving={setIsSaving}
               subirOEncolarFoto={subirOEncolarFoto}
-              borrarPedidoDefinitivo={iniciarBorradoPedidoDefinitivo}
+              borrarPedidoDefinitivo={borrarPedidoDefinitivo}
               ocultarPedidoDashboard={ocultarPedidoDashboard}
             />
           )}
@@ -1454,7 +1455,7 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               setModalConfirm={setModalConfirm}
               borrarCliente={iniciarBorradoCliente}
               pedidos={pedidos}
-              borrarPedidoDefinitivo={iniciarBorradoPedidoDefinitivo}
+              borrarPedidoDefinitivo={borrarPedidoDefinitivo}
               restaurarPedidoDashboard={restaurarPedidoDashboard}
               ocultarPedidoDashboard={ocultarPedidoDashboard}
               setFotoAmpliada={setFotoAmpliada}
@@ -1487,6 +1488,16 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               gananciasPorMes={gananciasPorMes}
               setPedidoSeleccionado={setPedidoSeleccionado}
               cambiarVista={cambiarVista}
+            />
+          )}
+
+          {esAdmin && vista === 'molderia' && (
+            <MolderiaView 
+              clientes={clientes}
+              clienteInicial={clienteSeleccionado}
+              cambiarVista={cambiarVista}
+              setClienteSeleccionado={setClienteSeleccionado}
+              mostrarToast={mostrarToast}
             />
           )}
         </Suspense>

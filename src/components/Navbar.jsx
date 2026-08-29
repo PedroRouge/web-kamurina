@@ -55,6 +55,7 @@ export default function Navbar({
               )}
             </button>
             <button onClick={() => cambiarVista('clientes')} className={`whitespace-nowrap ${vista === 'clientes' ? 'text-white' : ''}`}>Clientes</button>
+            <button onClick={() => cambiarVista('molderia')} className={`whitespace-nowrap ${vista === 'molderia' ? 'text-white' : ''}`}>Moldería</button>
             <button onClick={() => cambiarVista('catalogo')} className={`whitespace-nowrap ${vista === 'catalogo' ? 'text-white' : ''}`}>Catálogo Telas</button>
             <button onClick={() => cambiarVista('catalogo-avios')} className={`whitespace-nowrap ${vista === 'catalogo-avios' ? 'text-white' : ''}`}>Catálogo Avios</button>
             <button onClick={() => cambiarVista('calculadora')} className={`whitespace-nowrap ${vista === 'calculadora' ? 'text-white' : ''}`}>Calculadora</button>

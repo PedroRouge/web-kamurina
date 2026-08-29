@@ -35,8 +35,9 @@ export default function DetalleClienteView({
         <h2 className="text-3xl font-bold mb-1">{clienteSeleccionado.nombre}</h2>
         <p className="text-stone-400 text-sm mb-6">{clienteSeleccionado.telefono}</p>
          
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <button onClick={() => cambiarVista('editar-cliente')} className="bg-stone-800 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-stone-700 hover:bg-stone-700 font-medium">Editar Datos y Medidas</button>
+          <button onClick={() => cambiarVista('molderia')} className="bg-stone-800 text-amber-300 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-amber-900/50 hover:bg-stone-700 font-medium flex items-center justify-center gap-1.5">📐 Trazar Moldería</button>
           <button onClick={() => window.print()} className="bg-stone-800 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-stone-700 hover:bg-stone-700 font-medium">Imprimir Ficha</button>
           <button 
             onClick={() => borrarCliente(clienteSeleccionado)} 
@@ -64,7 +65,17 @@ export default function DetalleClienteView({
               return (
                 <div key={p.id} className={`bg-stone-950/40 border p-4 rounded-2xl flex flex-col gap-3 relative ${esRechazado ? 'border-red-900/50' : 'border-stone-800'}`}>
                   <button 
-                    onClick={() => borrarPedidoDefinitivo(p)} 
+                    onClick={() => {
+                      if (setModalConfirm) {
+                        setModalConfirm({
+                          isOpen: true,
+                          text: `¿Estás seguro de que deseas eliminar definitivamente el pedido "${p.prenda}" (${p.id}) de todo el sistema?`,
+                          action: () => borrarPedidoDefinitivo(p.id)
+                        });
+                      } else {
+                        borrarPedidoDefinitivo(p.id);
+                      }
+                    }} 
                     className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs p-1"
                     title="Eliminar definitivamente"
                   >
