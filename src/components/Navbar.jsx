@@ -41,29 +41,29 @@ export default function Navbar({
         Atelier Kamurina {esAdmin ? <span className="text-xs bg-stone-800 text-stone-300 px-2 py-0.5 rounded-full ml-2">Admin</span> : <span className="text-xs bg-stone-800 text-stone-300 px-2 py-0.5 rounded-full ml-2">Cliente</span>}
       </h1>
 
-      <div className="flex gap-4 md:gap-8 text-sm text-stone-400 font-medium overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
-        <button onClick={() => cambiarVista('dashboard')} className={`whitespace-nowrap ${vista === 'dashboard' ? 'text-white' : ''}`}>Mis Pedidos</button>
+      <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 text-sm text-stone-400 font-medium w-full md:w-auto overflow-x-auto scrollbar-hide py-1">
+        <button onClick={() => cambiarVista('dashboard')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'dashboard' ? 'text-white font-semibold' : ''}`}>Mis Pedidos</button>
         
         {esAdmin && (
           <>
-            <button onClick={() => cambiarVista('solicitudes')} className={`whitespace-nowrap relative inline-flex items-center ${vista === 'solicitudes' ? 'text-white' : ''}`}>
+            <button onClick={() => cambiarVista('solicitudes')} className={`whitespace-nowrap relative inline-flex items-center transition-colors hover:text-stone-200 ${vista === 'solicitudes' ? 'text-white font-semibold' : ''}`}>
               <span>Solicitudes</span>
               {solicitudesPendientesAdmin.length > 0 && (
-                <span className="ml-2 bg-amber-500 text-stone-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none inline-block">
+                <span className="ml-1.5 bg-amber-500 text-stone-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none inline-block">
                   {solicitudesPendientesAdmin.length}
                 </span>
               )}
             </button>
-            <button onClick={() => cambiarVista('clientes')} className={`whitespace-nowrap ${vista === 'clientes' ? 'text-white' : ''}`}>Clientes</button>
-            <button onClick={() => cambiarVista('molderia')} className={`whitespace-nowrap ${vista === 'molderia' ? 'text-white' : ''}`}>Moldería</button>
-            <button onClick={() => cambiarVista('catalogo')} className={`whitespace-nowrap ${vista === 'catalogo' ? 'text-white' : ''}`}>Catálogo Telas</button>
-            <button onClick={() => cambiarVista('catalogo-avios')} className={`whitespace-nowrap ${vista === 'catalogo-avios' ? 'text-white' : ''}`}>Catálogo Avios</button>
-            <button onClick={() => cambiarVista('calculadora')} className={`whitespace-nowrap ${vista === 'calculadora' ? 'text-white' : ''}`}>Calculadora</button>
-            <button onClick={() => cambiarVista('ganancias')} className={`whitespace-nowrap ${vista === 'ganancias' ? 'text-white' : ''}`}>Ganancias</button>
+            <button onClick={() => cambiarVista('clientes')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'clientes' ? 'text-white font-semibold' : ''}`}>Clientes</button>
+            <button onClick={() => cambiarVista('molderia')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'molderia' ? 'text-white font-semibold' : ''}`}>Moldería</button>
+            <button onClick={() => cambiarVista('catalogo')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'catalogo' ? 'text-white font-semibold' : ''}`}>Catálogo Telas</button>
+            <button onClick={() => cambiarVista('catalogo-avios')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'catalogo-avios' ? 'text-white font-semibold' : ''}`}>Catálogo Avios</button>
+            <button onClick={() => cambiarVista('calculadora')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'calculadora' ? 'text-white font-semibold' : ''}`}>Calculadora</button>
+            <button onClick={() => cambiarVista('ganancias')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'ganancias' ? 'text-white font-semibold' : ''}`}>Ganancias</button>
           </>
         )}
 
-        <button onClick={handleLogout} className="text-red-400 text-xs ml-auto md:ml-4 whitespace-nowrap">Cerrar sesion</button>
+        <button onClick={handleLogout} className="text-red-400 hover:text-red-300 text-xs ml-auto md:ml-2 whitespace-nowrap transition-colors">Cerrar sesión</button>
       </div>
     </nav>
   );

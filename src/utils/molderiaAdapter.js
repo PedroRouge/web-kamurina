@@ -301,31 +301,16 @@ export function validarMedidasMolde(DesignPattern, medidasAdaptadas = {}) {
   };
 }
 
+import { trazarMoldeSeguro } from './molderiaEngine';
+
 /**
- * Traza y genera el SVG del molde utilizando FreeSewing
+ * Traza y genera el SVG del molde utilizando el motor de patronaje
  */
-export function trazarMolde(DesignPattern, medidasAdaptadas = {}, opciones = {}) {
-  if (!DesignPattern) {
-    throw new Error('No se ha proporcionado un diseño de patrón válido.');
-  }
-
-  // Instanciar patrón con las medidas y opciones
-  const pattern = new DesignPattern({
-    measurements: medidasAdaptadas,
-    options: {
-      ...opciones,
-      paperless: opciones.paperless ?? true, // Incluir cotas y medidas
-      sa: opciones.sa ?? 10 // Margen de costura en mm (1 cm)
-    }
-  });
-
-  // Trazar
-  pattern.draft();
-
-  // Renderizar a SVG
-  const svg = pattern.render();
+export function trazarMolde(molde, medidasCliente = {}, opciones = {}) {
+  const moldeId = typeof molde === 'string' ? molde : (molde?.id || 'remera');
+  const svg = trazarMoldeSeguro(moldeId, medidasCliente, opciones);
   return {
     svg,
-    pattern
+    pattern: { id: moldeId }
   };
 }

@@ -19,6 +19,7 @@ import ModalRechazo from './components/modals/ModalRechazo';
 import ModalPago from './components/modals/ModalPago';
 import ModalAlias from './components/modals/ModalAlias';
 import ModalFotoAmpliada from './components/modals/ModalFotoAmpliada';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import LoginView from './views/LoginView';
 import DashboardView from './views/DashboardView';
@@ -1273,8 +1274,9 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
       />
 
       <main className="relative z-10 max-w-6xl mx-auto">
-        <Suspense fallback={<ViewLoadingFallback />}>
-          {vista === 'dashboard' && (
+        <ErrorBoundary>
+          <Suspense fallback={<ViewLoadingFallback />}>
+            {vista === 'dashboard' && (
             <DashboardView 
               esAdmin={esAdmin}
               totalPedidosActivos={totalPedidosActivos}
@@ -1502,6 +1504,7 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
             />
           )}
         </Suspense>
+      </ErrorBoundary>
       </main>
 
       <FloatingMenu 

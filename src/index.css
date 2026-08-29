@@ -1,5 +1,32 @@
 @import "tailwindcss";
 
+/* Ocultar barra de scroll en elementos con scrollbar-hide */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none !important;  /* IE y Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+/* Scrollbar estilizada y discreta para el resto de la app en modo oscuro */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #292524;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #44403c;
+}
+
 @media print {
   @page {
     /* Esto quita TODO el margen del navegador. Lo pega al borde absoluto. */

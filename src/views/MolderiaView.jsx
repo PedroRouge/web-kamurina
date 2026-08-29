@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CATALOGO_MOLDES } from '../utils/molderiaCatalog';
-import { adaptarMedidasCliente, validarMedidasMolde, trazarMolde, getNombreMedidaEs } from '../utils/molderiaAdapter';
+import { trazarMoldeSeguro } from '../utils/molderiaEngine';
 
 export default function MolderiaView({
   clientes = [],
@@ -10,7 +10,7 @@ export default function MolderiaView({
   mostrarToast
 }) {
   const [clienteId, setClienteId] = useState(clienteInicial?.id || (clientes.length > 0 ? clientes[0].id : ''));
-  const [moldeId, setMoldeId] = useState('aaron');
+  const [moldeId, setMoldeId] = useState('teagan');
   const [filtroCategoria, setFiltroCategoria] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
   const [conMargenCostura, setConMargenCostura] = useState(true);
@@ -50,64 +50,55 @@ export default function MolderiaView({
     });
   }, [filtroCategoria, busqueda]);
 
-  // Medidas adaptadas del cliente activo
-  const medidasAdaptadas = useMemo(() => {
-    if (!clienteActivo?.medidas) return {};
-    return adaptarMedidasCliente(clienteActivo.medidas);
+  // Medidas del cliente activo o estándar
+  const medidasCliente = useMemo(() => {
+    return clienteActivo?.medidas || {};
   }, [clienteActivo]);
 
-  // Validación de medidas para el molde activo
+  // Validación de medidas requeridas
   const validacion = useMemo(() => {
-    if (!moldeActivo?.design) return { esValido: false, faltantes: [] };
-    return validarMedidasMolde(moldeActivo.design, medidasAdaptadas);
-  }, [moldeActivo, medidasAdaptadas]);
+    const requeridas = moldeActivo?.medidasRequeridas || [];
+    if (!clienteActivo) return { esValido: true, faltantes: [], usandoEstandar: true };
+
+    const faltantes = [];
+    for (const req of requeridas) {
+      if (!medidasCliente[req] || parseFloat(medidasCliente[req]) <= 0) {
+        faltantes.push(req);
+      }
+    }
+
+    return {
+      esValido: faltantes.length === 0,
+      faltantes,
+      usandoEstandar: false
+    };
+  }, [moldeActivo, clienteActivo, medidasCliente]);
 
   // Efecto para trazar el molde cuando cambia el molde, cliente o configuraciones
   useEffect(() => {
-    if (!moldeActivo?.design) return;
-
-    if (!clienteActivo) {
-      setSvgRenderizado('');
-      setErrorTrazado('Por favor selecciona un cliente para generar la moldería a medida.');
-      return;
-    }
-
-    if (!validacion.esValido) {
-      setSvgRenderizado('');
-      setErrorTrazado(null);
-      return;
-    }
-
     setCargando(true);
     setErrorTrazado(null);
 
-    // Permitir ciclo de render antes del trazado intensivo
     const timer = setTimeout(() => {
       try {
-        const { svg } = trazarMolde(moldeActivo.design, medidasAdaptadas, {
-          sa: conMargenCostura ? 10 : 0, // 10 mm = 1 cm de costura
-          paperless: conCotas
+        const svg = trazarMoldeSeguro(moldeActivo.id, medidasCliente, {
+          clienteNombre: clienteActivo?.nombre || 'Medida Estándar',
+          conMargenCostura,
+          conCotas
         });
 
-        // Limpiar o inyectar clases para que el SVG sea responsive y estético en modo oscuro
-        const svgAjustado = svg
-          .replace('<svg ', '<svg class="freesewing-pattern-svg w-full h-auto max-h-[70vh]" ')
-          .replace(/stroke="black"/g, 'stroke="#e7e5e4"')
-          .replace(/fill="white"/g, 'fill="transparent"');
-
-        setSvgRenderizado(svgAjustado);
+        setSvgRenderizado(svg);
         setErrorTrazado(null);
       } catch (err) {
         console.error("Error al trazar el molde:", err);
-        setErrorTrazado(`Error al generar el patrón: ${err.message || 'Verifique que las proporciones corporales sean consistentes.'}`);
-        setSvgRenderizado('');
+        setErrorTrazado(`Error al generar el patrón: ${err.message || 'Verifique las medidas del cliente.'}`);
       } finally {
         setCargando(false);
       }
-    }, 50);
+    }, 40);
 
     return () => clearTimeout(timer);
-  }, [moldeActivo, clienteActivo, medidasAdaptadas, validacion, conMargenCostura, conCotas]);
+  }, [moldeActivo, clienteActivo, medidasCliente, conMargenCostura, conCotas]);
 
   // Descargar archivo SVG
   const descargarSVG = () => {
@@ -121,10 +112,10 @@ export default function MolderiaView({
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    if (mostrarToast) mostrarToast("Archivo SVG del molde descargado");
+    if (mostrarToast) mostrarToast("Archivo SVG del molde descargado correctamente");
   };
 
-  // Imprimir molde
+  // Imprimir molde a escala 1:1
   const imprimirMolde = () => {
     if (!svgRenderizado) return;
     const ventanaImpresion = window.open('', '_blank');
@@ -136,10 +127,10 @@ export default function MolderiaView({
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Patrón ${moldeActivo.nombre} - ${clienteActivo?.nombre}</title>
+          <title>Patrón ${moldeActivo.nombre} - ${clienteActivo?.nombre || 'Estándar'}</title>
           <style>
             @page { size: auto; margin: 10mm; }
-            body { font-family: sans-serif; margin: 0; padding: 20px; color: #000; }
+            body { font-family: sans-serif; margin: 0; padding: 20px; color: #000; background: #fff; }
             h1 { font-size: 18px; margin-bottom: 4px; }
             p { font-size: 12px; margin-bottom: 16px; color: #555; }
             svg { width: 100%; height: auto; display: block; }
@@ -149,7 +140,7 @@ export default function MolderiaView({
         <body>
           <div class="header-info">
             <h1>Atelier Kamurina — ${moldeActivo.nombre}</h1>
-            <p><strong>Cliente:</strong> ${clienteActivo?.nombre || 'General'} | <strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
+            <p><strong>Cliente:</strong> ${clienteActivo?.nombre || 'Medidas Estándar'} | <strong>Fecha:</strong> ${new Date().toLocaleDateString()}</p>
           </div>
           ${svgRenderizado}
           <script>
@@ -180,7 +171,7 @@ export default function MolderiaView({
             <span className="text-2xl">📐</span>
             <h2 className="text-2xl font-bold text-white tracking-tight">Moldería Automática & Graduación</h2>
             <span className="bg-stone-800 text-stone-300 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-stone-700">
-              FreeSewing v3
+              Patronaje Digital
             </span>
           </div>
           <p className="text-stone-400 text-xs">
@@ -224,7 +215,7 @@ export default function MolderiaView({
               className="w-full bg-stone-950 border border-stone-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-stone-600 transition-colors"
             >
               {clientes.length === 0 ? (
-                <option value="">No hay clientes registrados</option>
+                <option value="">Medidas Estándar Base</option>
               ) : (
                 clientes.map(c => (
                   <option key={c.id} value={c.id}>
@@ -234,8 +225,8 @@ export default function MolderiaView({
               )}
             </select>
 
-            {clienteActivo && (
-              <div className="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80 text-xs space-y-1">
+            {clienteActivo ? (
+              <div className="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80 text-xs space-y-1.5">
                 <div className="flex justify-between text-stone-300">
                   <span className="text-stone-500">Cliente:</span>
                   <span className="font-semibold">{clienteActivo.nombre}</span>
@@ -253,6 +244,10 @@ export default function MolderiaView({
                   <span>{clienteActivo.medidas?.['Contorno de Cadera'] || '—'} cm</span>
                 </div>
               </div>
+            ) : (
+              <div className="bg-stone-950/40 p-2.5 rounded-xl border border-stone-800 text-[11px] text-stone-500">
+                ℹ️ Trazando con proporciones anatómicas estándar base.
+              </div>
             )}
           </div>
 
@@ -265,7 +260,7 @@ export default function MolderiaView({
               <span className="text-[10px] text-stone-500">{moldeActivo.genero}</span>
             </div>
 
-            {/* Filtro por Categoría */}
+            {/* Filtro por Categoría y Buscador */}
             <div className="grid grid-cols-2 gap-1.5 text-xs">
               <select
                 value={filtroCategoria}
@@ -300,7 +295,7 @@ export default function MolderiaView({
             </select>
 
             {/* Ficha descriptiva del molde seleccionado */}
-            <div className="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80 text-xs space-y-1.5">
+            <div className="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80 text-xs space-y-2">
               <div className="font-semibold text-white flex items-center gap-1.5">
                 <span>{moldeActivo.icono}</span>
                 <span>{moldeActivo.nombre}</span>
@@ -308,10 +303,19 @@ export default function MolderiaView({
               <p className="text-stone-400 text-[11px] leading-relaxed">
                 {moldeActivo.descripcion}
               </p>
-              <div className="pt-1 flex items-center justify-between text-[10px] text-stone-500 border-t border-stone-900">
-                <span>Categoría: {moldeActivo.categoria}</span>
-                <span>Identificador: @freesewing/{moldeActivo.id}</span>
-              </div>
+              
+              {moldeActivo.piezas && (
+                <div className="pt-2 border-t border-stone-900 space-y-1">
+                  <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider">Despiece incluido:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {moldeActivo.piezas.map((p, idx) => (
+                      <span key={idx} className="bg-stone-900 border border-stone-800 text-[10px] text-stone-300 px-2 py-0.5 rounded-md">
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -344,7 +348,7 @@ export default function MolderiaView({
                 />
                 <div>
                   <div className="font-medium text-white">Cotas y Medidas en Pantalla</div>
-                  <div className="text-[10px] text-stone-500">Muestra cotas y dimensiones impresas en cada pieza</div>
+                  <div className="text-[10px] text-stone-500">Muestra cotas, hilo de tela y piquetes</div>
                 </div>
               </label>
             </div>
@@ -387,14 +391,14 @@ export default function MolderiaView({
               <button
                 onClick={imprimirMolde}
                 disabled={!svgRenderizado || cargando}
-                className="bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 px-3 py-1.5 rounded-xl text-xs font-bold border border-stone-700 flex items-center gap-1.5 transition-colors"
+                className="bg-stone-800 hover:bg-stone-700 disabled:opacity-40 text-stone-200 px-3 py-1.5 rounded-xl text-xs font-bold border border-stone-700 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 🖨️ Imprimir / PDF
               </button>
               <button
                 onClick={descargarSVG}
                 disabled={!svgRenderizado || cargando}
-                className="bg-white hover:bg-stone-200 disabled:opacity-40 text-stone-950 px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                className="bg-white hover:bg-stone-200 disabled:opacity-40 text-stone-950 px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 ⬇️ Descargar SVG
               </button>
@@ -409,49 +413,33 @@ export default function MolderiaView({
             {/* Estado de Carga */}
             {cargando && (
               <div className="absolute inset-0 bg-stone-950/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center gap-3">
-                <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-8 h-8 border-2 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-stone-300 text-xs font-medium tracking-wide">
-                  Trazando geometría paramétrica para {clienteActivo?.nombre}...
+                  Trazando geometría paramétrica para {clienteActivo?.nombre || 'Cliente'}...
                 </p>
               </div>
             )}
 
-            {/* Error por Medidas Faltantes (Requisito Clave) */}
+            {/* Advertencia si faltan medidas del cliente */}
             {!validacion.esValido && clienteActivo && (
-              <div className="max-w-md w-full bg-stone-900/90 border border-amber-500/40 rounded-2xl p-6 text-center space-y-4 shadow-2xl">
-                <div className="w-12 h-12 bg-amber-500/10 text-amber-400 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto text-xl">
-                  ⚠️
+              <div className="absolute top-4 right-4 z-10 max-w-xs bg-amber-950/90 border border-amber-500/40 rounded-xl p-3 text-xs space-y-2 backdrop-blur-md">
+                <div className="font-bold text-amber-300 flex items-center gap-1">
+                  <span>⚠️</span> Medidas sugeridas:
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-white">Medidas Requeridas Incompletas</h3>
-                  <p className="text-stone-400 text-xs mt-1">
-                    Para confeccionar el molde <strong className="text-stone-200">"{moldeActivo.nombre}"</strong>, la ficha de <strong className="text-amber-400">{clienteActivo.nombre}</strong> necesita registrar las siguientes medidas:
-                  </p>
-                </div>
-
-                <div className="bg-stone-950/80 border border-stone-800 rounded-xl p-3 text-left space-y-1.5 max-h-48 overflow-y-auto">
-                  {validacion.faltantes.map((f, idx) => (
-                    <div key={idx} className="text-xs text-amber-200/90 flex items-center gap-2">
-                      <span className="text-amber-400">•</span>
-                      <span>{f.nombreEs}</span>
-                      <span className="text-[10px] text-stone-500 font-mono">({f.clave})</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    onClick={irAEditarCliente}
-                    className="w-full bg-amber-500 hover:bg-amber-400 text-stone-950 py-2.5 rounded-xl text-xs font-bold transition-colors"
-                  >
-                    ✏️ Completar Medidas de {clienteActivo.nombre}
-                  </button>
-                </div>
+                <p className="text-stone-300 text-[11px]">
+                  Falta completar: {validacion.faltantes.join(', ')}. Se trazó con valores estándar para previsualizar.
+                </p>
+                <button
+                  onClick={irAEditarCliente}
+                  className="text-amber-400 hover:text-amber-300 underline font-semibold text-[11px]"
+                >
+                  ✏️ Completar Medidas Ahora
+                </button>
               </div>
             )}
 
-            {/* Error en el Trazado o Algoritmo */}
-            {errorTrazado && validacion.esValido && (
+            {/* Error en el Trazado */}
+            {errorTrazado && (
               <div className="max-w-md w-full bg-red-950/30 border border-red-900/60 rounded-2xl p-6 text-center space-y-3">
                 <div className="text-2xl">⚠️</div>
                 <h3 className="text-sm font-bold text-red-400">Error en el Cálculo del Patrón</h3>
@@ -466,7 +454,7 @@ export default function MolderiaView({
             )}
 
             {/* Molde Generado Exitosamente */}
-            {svgRenderizado && validacion.esValido && !cargando && (
+            {svgRenderizado && !errorTrazado && !cargando && (
               <div 
                 className="w-full flex items-center justify-center transition-transform duration-200 overflow-auto"
                 style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
@@ -478,11 +466,11 @@ export default function MolderiaView({
           {/* Pie de Información y Consejos de Taller */}
           <div className="bg-stone-900/30 border border-stone-800/80 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[11px] text-stone-400">
             <div className="flex items-center gap-2">
-              <span className="text-emerald-400">●</span>
-              <span>Graduación matemática al 100% vectorial</span>
+              <span className="text-sky-400">●</span>
+              <span>Graduación matemática al 100% vectorial con caja de escala 10x10 cm</span>
             </div>
             <div className="text-stone-500">
-              💡 Tip: Puedes exportar a SVG e importarlo directamente en Illustrator, Inkscape, Audaces o imprimirlo en escala real.
+              💡 Tip: Puedes exportar a SVG para cortar en plotter o abrirlo en Illustrator / Inkscape / Audaces.
             </div>
           </div>
         </div>
