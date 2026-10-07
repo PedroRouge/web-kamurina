@@ -194,7 +194,7 @@ export default function DetallePedidoView({
           </div>
         )}
 
-        {esAdmin && pedidoSeleccionado.precio > 0 && (
+        {esAdmin && pedidoSeleccionado.precio > 0 && !pedidoSeleccionado.pagado && (
           <button
             onClick={() => setModalPago({ isOpen: true, pedidoId: pedidoSeleccionado.id })}
             className="w-full bg-white text-stone-950 py-3.5 rounded-xl font-bold text-xs md:text-sm flex items-center justify-center gap-2 hover:bg-stone-200 transition-colors shadow-lg active:scale-98"

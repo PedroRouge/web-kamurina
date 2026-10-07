@@ -254,7 +254,7 @@ export default function DashboardView({
                   )}
                 </div>
 
-                {esAdmin && p.precio > 0 && (
+                {esAdmin && p.precio > 0 && !p.pagado && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

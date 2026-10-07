@@ -5,7 +5,9 @@ export default function GananciasView({
   exportarReportePDF,
   gananciasPorMes,
   setPedidoSeleccionado,
-  cambiarVista
+  cambiarVista,
+  isPdfExporting,
+  pedidosSinPrecio
 }) {
   return (
     <div className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-6 md:p-8 rounded-3xl max-w-3xl mx-auto">
@@ -16,11 +18,31 @@ export default function GananciasView({
         </div>
         <button 
           onClick={exportarReportePDF}
-          className="bg-white text-stone-950 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-stone-200 transition-colors shadow-lg"
+          disabled={isPdfExporting}
+          className="bg-white text-stone-950 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-stone-200 transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          🖨️ Exportar Reporte (PDF)
+          {isPdfExporting ? (
+            <>
+              <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+              </svg>
+              Generando PDF...
+            </>
+          ) : (
+            <>🖨️ Exportar Reporte (PDF)</>
+          )}
         </button>
       </div>
+
+      {pedidosSinPrecio > 0 && (
+        <div className="bg-amber-950/30 border border-amber-900/50 text-amber-300 text-xs px-4 py-3 rounded-2xl mb-6 flex items-center gap-2">
+          <span className="text-base">⚠️</span>
+          <span>
+            <strong>{pedidosSinPrecio} pedido{pedidosSinPrecio > 1 ? 's' : ''}</strong> activo{pedidosSinPrecio > 1 ? 's' : ''} sin precio asignado — no se incluyen en este reporte.
+          </span>
+        </div>
+      )}
 
       {Object.keys(gananciasPorMes).length === 0 ? (
         <p className="text-stone-500 text-center py-10 italic">No hay pedidos con precios asignados para calcular ganancias.</p>
@@ -75,4 +97,3 @@ export default function GananciasView({
     </div>
   );
 }
-

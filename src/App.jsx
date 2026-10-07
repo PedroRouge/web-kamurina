@@ -77,6 +77,7 @@ export default function App() {
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState(null);
   
   const [isSaving, setIsSaving] = useState(false);
+  const [isPdfExporting, setIsPdfExporting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
   const [fotosPendientesCount, setFotosPendientesCount] = useState(0);
 
@@ -372,7 +373,10 @@ export default function App() {
       unsubPedidos = onSnapshot(collection(db, "pedidos"), (snapshot) => {
         const list = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
         setPedidos(list);
-      }, (err) => console.error("Error leyendo pedidos del cliente:", err));
+      }, (err) => {
+        console.error("Error leyendo pedidos del cliente:", err);
+        mostrarToast("Error de conexión. Verificá tu conexión a internet.");
+      });
 
       setTelas([]);
       setAvios([]);
@@ -1025,12 +1029,19 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
     }
   };
 
-  const exportarReportePDF = () => {
+  const exportarReportePDF = async () => {
     if (Object.keys(gananciasPorMes).length === 0) {
       mostrarToast('No hay datos de ganancias para exportar');
       return;
     }
-    exportarReportePDFNativo(gananciasPorMes);
+    setIsPdfExporting(true);
+    try {
+      // setTimeout 0 permite que React pinte el estado "Generando PDF..." antes de bloquear con jsPDF
+      await new Promise(resolve => setTimeout(resolve, 50));
+      exportarReportePDFNativo(gananciasPorMes);
+    } finally {
+      setIsPdfExporting(false);
+    }
   };
 
   const handleEmailAuth = async (e) => {
@@ -1137,7 +1148,16 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
   const gananciasPorMes = pedidos.reduce((acc, p) => {
     const precio = parseNumero(p.precio, 0);
     if (precio <= 0) return acc;
-    const mesAnio = p.entrega ? p.entrega.slice(0, 7) : new Date(p.createdAt || Date.now()).toISOString().slice(0, 7);
+    // Usamos createdAt como fuente de verdad del mes.
+    // Solo recurrimos a p.entrega si no hay createdAt Y la entrega ya pasó (es fecha real, no estimada futura).
+    let mesAnio;
+    if (p.createdAt) {
+      mesAnio = new Date(p.createdAt).toISOString().slice(0, 7);
+    } else if (p.entrega) {
+      mesAnio = p.entrega.slice(0, 7);
+    } else {
+      mesAnio = new Date().toISOString().slice(0, 7);
+    }
     const gastos = parseNumero(p.gastos, 0);
     const gananciaPedido = precio - gastos;
     
@@ -1150,6 +1170,15 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
     acc[mesAnio].pedidos.push({ ...p, precio, gastos, gananciaPedido });
     return acc;
   }, {});
+
+  // Pedidos activos sin precio asignado (excluidos del reporte de ganancias)
+  const pedidosSinPrecio = pedidos.filter(p =>
+    parseNumero(p.precio, 0) <= 0 &&
+    p.estado !== 'Rechazado' &&
+    p.estado !== 'Pendiente de Aprobación' &&
+    p.estado !== 'Entregado con éxito' &&
+    !p.ocultoDashboard
+  ).length;
 
   const saldoPendienteModalPago = (() => {
     if (!modalPago.isOpen || !modalPago.pedidoId) return 0;
@@ -1496,6 +1525,8 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               gananciasPorMes={gananciasPorMes}
               setPedidoSeleccionado={setPedidoSeleccionado}
               cambiarVista={cambiarVista}
+              isPdfExporting={isPdfExporting}
+              pedidosSinPrecio={pedidosSinPrecio}
             />
           )}
 
