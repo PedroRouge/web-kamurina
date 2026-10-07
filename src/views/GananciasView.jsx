@@ -26,7 +26,7 @@ export default function GananciasView({
         <p className="text-stone-500 text-center py-10 italic">No hay pedidos con precios asignados para calcular ganancias.</p>
       ) : (
         <div className="space-y-6 print-ganancias-exclusiva">
-          {Object.entries(gananciasPorMes).map(([mes, datos]) => (
+          {Object.entries(gananciasPorMes).sort(([a], [b]) => b.localeCompare(a)).map(([mes, datos]) => (
             <div key={mes} className="bg-stone-950/60 border border-stone-800 p-5 rounded-2xl">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stone-800 pb-4 mb-4">
                 <div>
