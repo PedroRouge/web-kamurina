@@ -8,6 +8,7 @@ import { encolarFoto, iniciarProcesadorDeFotos, suscribirEstadoCola, sincronizar
 import { MEDIDAS_LISTA } from './constants/medidas';
 import { handleKeyDownEnter, generarIdPedido, parseNumero, formatearMoneda, validarTelefono } from './utils/helpers';
 import { buscarClienteCoincidente, sonNombresEquivalentes, coincidenTelefonos } from './utils/clienteMatcher';
+import { exportarReportePDFNativo } from './utils/exportarPDF';
 
 import Navbar from './components/Navbar';
 import Toast from './components/Toast';
@@ -1025,7 +1026,11 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
   };
 
   const exportarReportePDF = () => {
-    window.print();
+    if (Object.keys(gananciasPorMes).length === 0) {
+      mostrarToast('No hay datos de ganancias para exportar');
+      return;
+    }
+    exportarReportePDFNativo(gananciasPorMes);
   };
 
   const handleEmailAuth = async (e) => {
