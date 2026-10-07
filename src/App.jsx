@@ -735,7 +735,7 @@ export default function App() {
         }
       }
 
-      const descripcionDetalle = esAdmin ? '' : (fd.get('descripcionDetalle') || '');
+      const descripcionDetalle = (fd.get('descripcionDetalle') || '').trim();
       const estadoInicial = esAdmin ? 'Eligiendo telas' : 'Pendiente de Aprobación';
 
       const nuevo = { 

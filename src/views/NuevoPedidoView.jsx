@@ -55,6 +55,15 @@ export default function NuevoPedidoView({
        
       {esAdmin ? (
         <>
+          <div className="mb-4">
+            <label className="block text-xs text-stone-400 mb-1">Notas adicionales (Opcional)</label>
+            <textarea
+              name="descripcionDetalle"
+              rows="3"
+              placeholder="Notas internas, detalles de confección, observaciones..."
+              className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none text-sm text-white resize-none"
+            />
+          </div>
           <select name="tela" className="w-full bg-stone-950 p-3 rounded-xl mb-4 border border-stone-800 outline-none text-white">
             <option value="">Seleccionar Tela (Opcional)</option>
             {telas.map(t => <option key={t.id} value={t.nombre}>{t.nombre}</option>)}

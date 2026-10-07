@@ -64,6 +64,7 @@ export default function DetallePedidoView({
                   gastos: gastosNuevos,
                   estado: nuevoEstado,
                   entrega: nuevaEntrega,
+                  descripcionDetalle: (fd.get('descripcionDetalle') || '').trim(),
                   motivoRechazo: nuevoEstado === 'Rechazado' ? (pedidoSeleccionado.motivoRechazo || 'Rechazado por el taller') : '',
                   ocultoDashboard: pedidoSeleccionado.ocultoDashboard || false
               };
@@ -110,6 +111,16 @@ export default function DetallePedidoView({
                         <option value="Entregado con éxito">Entregado con éxito</option>
                     </select>
                 </div>
+                <div className="sm:col-span-2">
+                    <label className="text-stone-500 pl-1 text-xs block mb-1">Notas adicionales / Descripción interna</label>
+                    <textarea
+                      name="descripcionDetalle"
+                      rows="3"
+                      defaultValue={pedidoSeleccionado.descripcionDetalle || ''}
+                      placeholder="Notas internas, detalles del pedido, observaciones..."
+                      className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none focus:border-stone-500 text-sm text-white resize-none"
+                    />
+                </div>
             </div>
             <button type="submit" className="w-full bg-stone-800 text-white py-3 rounded-xl font-bold mb-6 hover:bg-stone-700 transition-colors">Guardar Información</button>
         </form>
@@ -117,7 +128,10 @@ export default function DetallePedidoView({
         <div className="space-y-4 mb-6 text-sm bg-stone-950/50 p-4 rounded-2xl border border-stone-800">
           <p><strong>Prenda:</strong> {pedidoSeleccionado.prenda}</p>
           {pedidoSeleccionado.descripcionDetalle && (
-            <p><strong>Detalles (Color, forma, tela):</strong> {pedidoSeleccionado.descripcionDetalle}</p>
+            <div className="bg-stone-900/50 border border-stone-700/50 p-3 rounded-xl">
+              <p className="text-xs text-stone-400 uppercase tracking-wider font-semibold mb-1">Notas / Descripción</p>
+              <p className="text-white text-sm whitespace-pre-wrap">{pedidoSeleccionado.descripcionDetalle}</p>
+            </div>
           )}
           <p><strong>Estado Actual:</strong> <span className={esRechazado ? "text-red-400 font-bold" : "text-white font-bold"}>{pedidoSeleccionado.estado}</span></p>
           <p><strong>Precio Total:</strong> {pedidoSeleccionado.precio > 0 ? formatearMoneda(pedidoSeleccionado.precio) : 'A presupuestar'}</p>
