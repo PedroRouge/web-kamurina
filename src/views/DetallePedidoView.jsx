@@ -34,11 +34,14 @@ export default function DetallePedidoView({
   const porcentajePagado = precioTotal > 0 ? Math.min(100, Math.round((totalAbonado / precioTotal) * 100)) : 0;
 
   return (
-    <div className={`bg-stone-900/40 backdrop-blur-md border p-6 md:p-10 rounded-3xl max-w-3xl mx-auto relative ${esRechazado ? 'border-red-900/60' : 'border-stone-800'}`}>
-      <button onClick={() => cambiarVista('dashboard')} className="absolute top-6 right-6 text-stone-400 hover:text-white bg-stone-800/50 px-3 py-1.5 rounded-xl text-xs hover:bg-stone-700">Volver</button>
-      
-      <h2 className="text-2xl font-bold mb-1">Detalle del Pedido</h2>
-      <p className="text-stone-400 text-sm mb-6">Cliente: <strong className="text-white">{pedidoSeleccionado.cliente}</strong> (ID: {pedidoSeleccionado.id})</p>
+    <div className={`bg-stone-900/40 backdrop-blur-md border p-5 md:p-10 rounded-3xl max-w-3xl mx-auto ${esRechazado ? 'border-red-900/60' : 'border-stone-800'}`}>
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div className="min-w-0">
+          <h2 className="text-xl md:text-2xl font-bold mb-1">Detalle del Pedido</h2>
+          <p className="text-stone-400 text-sm">Cliente: <strong className="text-white">{pedidoSeleccionado.cliente}</strong> <span className="text-stone-500">(ID: {pedidoSeleccionado.id})</span></p>
+        </div>
+        <button onClick={() => cambiarVista('dashboard')} className="flex-shrink-0 text-stone-400 hover:text-white bg-stone-800/50 px-3 py-1.5 rounded-xl text-xs hover:bg-stone-700">Volver</button>
+      </div>
 
       {esRechazado && pedidoSeleccionado.motivoRechazo && (
         <div className="bg-red-950/40 border border-red-900/60 p-4 rounded-2xl mb-6 text-sm text-red-300">

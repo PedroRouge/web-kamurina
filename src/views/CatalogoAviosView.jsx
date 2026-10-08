@@ -40,22 +40,26 @@ export default function CatalogoAviosView({
                 <h3 className="font-bold cursor-pointer hover:underline" onClick={() => { setAvioSeleccionado(a); cambiarVista('detalle-avio'); }}>{a.nombre}</h3>
                 <p className="text-xs text-stone-400 mb-1">Tipo: {a.tipo || 'N/A'} {a.centimetros ? `- ${a.centimetros} cm` : ''}</p>
                 {a.precio > 0 && <p className="text-xs text-emerald-400 font-semibold mb-2">${a.precio.toLocaleString()}</p>}
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs text-stone-400">Cant:</span>
-                  <input
-                    type="text"
-                    value={a.cantidad || ''}
-                    onChange={(e) => actualizarCantidadAvio(a.id, e.target.value)}
-                    className="bg-stone-950 p-1 rounded border border-stone-800 w-16 text-xs text-center focus:border-white outline-none"
-                  />
-                  <span className="text-xs text-stone-400 ml-1">Precio:</span>
-                  <input
-                    type="number"
-                    min="0"
-                    value={a.precio !== undefined ? a.precio : ''}
-                    onChange={(e) => actualizarPrecioAvio(a.id, e.target.value)}
-                    className="bg-stone-950 p-1 rounded border border-stone-800 w-20 text-xs text-center focus:border-white outline-none text-emerald-400"
-                  />
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-stone-400">Cant:</span>
+                    <input
+                      type="text"
+                      value={a.cantidad || ''}
+                      onChange={(e) => actualizarCantidadAvio(a.id, e.target.value)}
+                      className="bg-stone-950 p-1 rounded border border-stone-800 w-14 text-xs text-center focus:border-white outline-none"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-stone-400">Precio:</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={a.precio !== undefined ? a.precio : ''}
+                      onChange={(e) => actualizarPrecioAvio(a.id, e.target.value)}
+                      className="bg-stone-950 p-1 rounded border border-stone-800 w-20 text-xs text-center focus:border-white outline-none text-emerald-400"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

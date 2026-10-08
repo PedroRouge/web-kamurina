@@ -49,25 +49,25 @@ export default function DashboardView({
       {esAdmin && arreglos && arreglos.filter(a => a.estado === 'activo').length > 0 && (
         <div
           onClick={() => cambiarVista('arreglos')}
-          className="mb-4 bg-stone-900/60 border border-stone-700 px-4 py-3 rounded-2xl flex items-center justify-between cursor-pointer hover:border-stone-500 transition-colors"
+          className="mb-4 bg-stone-900/60 border border-stone-700 px-4 py-3 rounded-2xl flex items-center justify-between cursor-pointer hover:border-stone-500 transition-colors gap-3"
         >
-          <div className="flex items-center gap-3">
-            <span className="text-lg">✂️</span>
-            <div>
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-lg flex-shrink-0">✂️</span>
+            <div className="min-w-0">
               <p className="text-xs text-stone-400 uppercase tracking-wider">Arreglos activos</p>
               <p className="text-white font-bold text-sm">{arreglos.filter(a => a.estado === 'activo').length} pendiente{arreglos.filter(a => a.estado === 'activo').length !== 1 ? 's' : ''}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {onNuevoArreglo && (
               <button
                 onClick={(e) => { e.stopPropagation(); onNuevoArreglo(); }}
-                className="text-xs bg-stone-800 border border-stone-700 text-stone-300 px-3 py-1.5 rounded-xl hover:bg-stone-700 transition-colors"
+                className="text-xs bg-stone-800 border border-stone-700 text-stone-300 px-3 py-1.5 rounded-xl hover:bg-stone-700 transition-colors whitespace-nowrap"
               >
                 + Nuevo
               </button>
             )}
-            <span className="text-stone-500 text-xs">Ver todos →</span>
+            <span className="text-stone-500 text-xs whitespace-nowrap">Ver todos →</span>
           </div>
         </div>
       )}
@@ -101,19 +101,17 @@ export default function DashboardView({
         </div>
       )}
 
-      <div className="mb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="w-full md:w-auto flex-1">
-          <input 
-            type="text" 
-            placeholder="Buscar pedido por prenda o ID..." 
-            value={busquedaDashboard}
-            onChange={(e) => setBusquedaDashboard(e.target.value)}
-            className="w-full bg-stone-900/50 border border-stone-800 p-4 rounded-2xl outline-none text-sm text-white backdrop-blur-md" 
-          />
-        </div>
+      <div className="mb-5 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+        <input 
+          type="text" 
+          placeholder="Buscar pedido por prenda o ID..." 
+          value={busquedaDashboard}
+          onChange={(e) => setBusquedaDashboard(e.target.value)}
+          className="flex-1 bg-stone-900/50 border border-stone-800 p-3.5 rounded-2xl outline-none text-sm text-white backdrop-blur-md" 
+        />
         <button 
           onClick={() => cambiarVista('nuevo-pedido')}
-          className="w-full md:w-auto bg-white text-stone-950 px-6 py-4 rounded-2xl font-bold text-sm whitespace-nowrap hover:bg-stone-200 transition-colors"
+          className="bg-white text-stone-950 px-5 py-3.5 rounded-2xl font-bold text-sm whitespace-nowrap hover:bg-stone-200 transition-colors"
         >
           {esAdmin ? '+ Crear Pedido' : '+ Solicitar Pedido'}
         </button>
@@ -126,7 +124,7 @@ export default function DashboardView({
             <button
               key={value}
               onClick={() => setFiltroEstado(value)}
-              className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-all ${
+              className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-all whitespace-nowrap ${
                 filtroEstado === value
                   ? 'bg-white text-stone-950 border-white font-bold'
                   : 'bg-stone-900/60 text-stone-400 border-stone-700 hover:border-stone-500 hover:text-stone-200'

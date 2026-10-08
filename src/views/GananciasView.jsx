@@ -20,9 +20,9 @@ export default function GananciasView({
 }) {
   return (
     <div className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-6 md:p-8 rounded-3xl max-w-3xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Ganancias Mensuales</h2>
+          <h2 className="text-xl md:text-2xl font-bold">Ganancias Mensuales</h2>
           <p className="text-stone-400 text-xs mt-1">Pedidos y arreglos con precio asignado</p>
         </div>
         <button

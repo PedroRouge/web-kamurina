@@ -181,8 +181,8 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Arreglos</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-xl md:text-2xl font-bold tracking-tight">Arreglos</h2>
         {esAdmin && (
           <button
             onClick={() => { setFormAbierto(v => !v); setErrorLocal(''); }}

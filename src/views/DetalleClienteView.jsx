@@ -30,10 +30,14 @@ export default function DetalleClienteView({
   return (
     <>
       {/* 1. AGREGAMOS print:hidden AQUÍ PARA QUE LA APP DESAPAREZCA AL IMPRIMIR Y NO OCUPE ESPACIO */}
-      <div className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-6 md:p-8 rounded-3xl max-w-2xl mx-auto relative print:hidden">
-        <button onClick={() => cambiarVista('clientes')} className="absolute top-4 right-4 text-stone-400 hover:text-white">Volver</button>
-        <h2 className="text-3xl font-bold mb-1">{clienteSeleccionado.nombre}</h2>
-        <p className="text-stone-400 text-sm mb-6">{clienteSeleccionado.telefono}</p>
+      <div className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-5 md:p-8 rounded-3xl max-w-2xl mx-auto relative print:hidden">
+        <div className="flex items-start justify-between gap-3 mb-6">
+          <div className="min-w-0">
+            <h2 className="text-2xl md:text-3xl font-bold mb-1 break-words">{clienteSeleccionado.nombre}</h2>
+            <p className="text-stone-400 text-sm">{clienteSeleccionado.telefono}</p>
+          </div>
+          <button onClick={() => cambiarVista('clientes')} className="flex-shrink-0 text-stone-400 hover:text-white text-sm">Volver</button>
+        </div>
          
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <button onClick={() => cambiarVista('editar-cliente')} className="bg-stone-800 px-4 py-3 sm:py-2 rounded-xl text-sm sm:text-xs border border-stone-700 hover:bg-stone-700 font-medium">Editar Datos y Medidas</button>
@@ -81,26 +85,25 @@ export default function DetalleClienteView({
                     ✕
                   </button>
                    
-                  <div className="flex flex-wrap justify-between items-center pr-6 gap-2">
+                  <div className="flex flex-col gap-2 pr-6">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-bold">{p.prenda} (<span className={esRechazado ? "text-red-400" : ""}>{p.estado}</span>)</span>
                       {p.ocultoDashboard ? (
                         <span className="text-[10px] bg-stone-800 text-amber-300 px-2 py-0.5 rounded border border-amber-900/40">
-                          📦 Archivado del Dashboard
+                          📦 Archivado
                         </span>
                       ) : (
                         <span className="text-[10px] bg-emerald-950/60 text-emerald-300 px-2 py-0.5 rounded border border-emerald-900/40">
-                          🟢 Visible en Dashboard
+                          🟢 Dashboard
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {p.ocultoDashboard ? (
                         <button
                           type="button"
                           onClick={() => restaurarPedidoDashboard && restaurarPedidoDashboard(p.id)}
                           className="text-[10px] font-bold bg-white text-stone-950 px-2.5 py-1 rounded-lg hover:bg-stone-200 transition-colors"
-                          title="Volver a mostrar en el Dashboard"
                         >
                           ↩️ Mostrar en Dashboard
                         </button>
@@ -109,7 +112,6 @@ export default function DetalleClienteView({
                           type="button"
                           onClick={() => ocultarPedidoDashboard && ocultarPedidoDashboard(p.id)}
                           className="text-[10px] text-stone-400 hover:text-stone-200 bg-stone-900 px-2.5 py-1 rounded-lg border border-stone-800 transition-colors"
-                          title="Quitar solo del Dashboard (Conservar en este historial)"
                         >
                           📦 Quitar del Dashboard
                         </button>
