@@ -9,6 +9,7 @@ const ESTADOS_FILTRO = [
   { label: 'Entregado', value: 'Entregado con éxito' },
   { label: 'Rechazados', value: 'Rechazado' },
   { label: '📦 Archivados / Ocultos', value: 'ARCHIVADOS' },
+  { label: '✂️ Arreglos', value: 'ARREGLOS' },
 ];
 
 export default function DashboardView({
@@ -36,13 +37,10 @@ export default function DashboardView({
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
 
   const pedidosFiltrados = pedidosVisibles.filter(p => {
-    if (filtroEstado === 'ARCHIVADOS') {
-      return Boolean(p.ocultoDashboard);
-    }
+    if (filtroEstado === 'ARCHIVADOS') return Boolean(p.ocultoDashboard);
+    if (filtroEstado === 'ARREGLOS') return false;
     if (p.ocultoDashboard) return false;
-    if (filtroEstado === 'TODOS') {
-      return esAdmin ? p.estado !== 'Rechazado' : true;
-    }
+    if (filtroEstado === 'TODOS') return esAdmin ? p.estado !== 'Rechazado' : true;
     return p.estado === filtroEstado;
   });
 
@@ -135,12 +133,62 @@ export default function DashboardView({
               }`}
             >
               {label}
+              {value === 'ARREGLOS' && arreglos && arreglos.filter(a => a.estado === 'activo').length > 0 && (
+                <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                  filtroEstado === 'ARREGLOS' ? 'bg-stone-200 text-stone-800' : 'bg-stone-700 text-stone-300'
+                }`}>
+                  {arreglos.filter(a => a.estado === 'activo').length}
+                </span>
+              )}
             </button>
           ))}
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+      {/* Vista de arreglos activos */}
+      {filtroEstado === 'ARREGLOS' ? (
+        <div className="space-y-3">
+          {(!arreglos || arreglos.filter(a => a.estado === 'activo').length === 0) ? (
+            <p className="text-stone-500 text-center py-10 italic">No hay arreglos activos.</p>
+          ) : (
+            arreglos.filter(a => a.estado === 'activo').map(a => {
+              const pagos = a.pagos || [];
+              const totalAbonado = pagos.reduce((s, p) => s + (Number(p.monto) || 0), 0);
+              const saldo = Math.max(0, (Number(a.precio) || 0) - totalAbonado);
+              const estaPagado = Number(a.precio) > 0 && totalAbonado >= Number(a.precio);
+              return (
+                <div key={a.id} className="bg-stone-900/40 backdrop-blur-md border border-stone-800 p-5 rounded-3xl">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <p className="font-semibold text-white">{a.cliente}</p>
+                      <p className="text-sm text-stone-400 mt-0.5">{a.descripcion}</p>
+                    </div>
+                    <span className={`text-[10px] uppercase px-2 py-1 rounded font-semibold ${
+                      estaPagado ? 'bg-emerald-900 text-emerald-300' : 'bg-stone-800 text-stone-300'
+                    }`}>
+                      {estaPagado ? 'Pagado' : 'Pendiente de pago'}
+                    </span>
+                  </div>
+                  <div className="mb-3">
+                    <p className="text-xl font-bold">${Number(a.precio).toLocaleString('es-AR')}</p>
+                    {totalAbonado > 0 && !estaPagado && (
+                      <p className="text-xs text-amber-400">Abonado: ${totalAbonado.toLocaleString('es-AR')} · Saldo: ${saldo.toLocaleString('es-AR')}</p>
+                    )}
+                  </div>
+                  {!estaPagado && Number(a.precio) > 0 && (
+                    <button
+                      onClick={() => setModalPago({ isOpen: true, pedidoId: a.id, esArreglo: true })}
+                      className="w-full bg-stone-800 hover:bg-stone-700 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors border border-stone-700"
+                    >
+                      💳 Registrar Pago
+                    </button>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      ) : (
         {pedidosFiltrados.length === 0 ? (
           <p className="col-span-full text-stone-500 text-center py-10 italic">
             {filtroEstado === 'ARCHIVADOS' ? 'No hay pedidos ocultos o archivados.' : 'No hay pedidos con ese estado.'}
@@ -336,6 +384,7 @@ export default function DashboardView({
           })
         )}
       </div>
+      )}
     </div>
   );
 }

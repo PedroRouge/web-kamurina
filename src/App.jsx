@@ -959,6 +959,35 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
       return;
     }
 
+    // --- Arreglo ---
+    if (modalPago.esArreglo) {
+      const arreglo = arreglos.find(a => a.id === modalPago.pedidoId);
+      if (!arreglo) return;
+      const pagosActuales = arreglo.pagos || [];
+      const totalAbonadoPrevio = pagosActuales.reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
+      const precioTotal = parseNumero(arreglo.precio, 0);
+      const saldoPendiente = Math.max(0, precioTotal - totalAbonadoPrevio);
+      if (monto > saldoPendiente && saldoPendiente > 0) {
+        mostrarToast(`⚠️ El monto excede el saldo pendiente (${formatearMoneda(saldoPendiente)})`);
+        return;
+      }
+      try {
+        const nuevoPago = { id: crypto.randomUUID(), monto, metodo: metodoPagoInput || 'Efectivo', fecha: new Date().toLocaleDateString('es-AR') };
+        const listaActualizada = [...pagosActuales, nuevoPago];
+        const totalAbonado = listaActualizada.reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
+        const estaPagado = precioTotal > 0 && totalAbonado >= precioTotal;
+        await setDoc(doc(db, 'arreglos', arreglo.id), { pagos: listaActualizada, pagado: estaPagado }, { merge: true });
+        setModalPago({ isOpen: false, pedidoId: null });
+        setMontoPagoInput('');
+        mostrarToast('Pago registrado con éxito');
+      } catch (err) {
+        console.error('Error registrar pago arreglo:', err);
+        mostrarToast('Error al registrar pago');
+      }
+      return;
+    }
+
+    // --- Pedido ---
     const pedido = pedidos.find(p => p.id === modalPago.pedidoId);
     if (!pedido) return;
 
@@ -1227,10 +1256,11 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
 
   const saldoPendienteModalPago = (() => {
     if (!modalPago.isOpen || !modalPago.pedidoId) return 0;
-    const p = pedidos.find(item => item.id === modalPago.pedidoId);
-    if (!p) return 0;
-    const precioTotal = parseNumero(p.precio, 0);
-    const totalAbonado = (p.pagos || []).reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
+    const coleccion = modalPago.esArreglo ? arreglos : pedidos;
+    const item = coleccion.find(x => x.id === modalPago.pedidoId);
+    if (!item) return 0;
+    const precioTotal = parseNumero(item.precio, 0);
+    const totalAbonado = (item.pagos || []).reduce((acc, curr) => acc + parseNumero(curr.monto, 0), 0);
     return Math.max(0, precioTotal - totalAbonado);
   })();
 
