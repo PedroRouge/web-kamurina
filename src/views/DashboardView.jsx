@@ -331,8 +331,10 @@ export default function DashboardView({
 
                 {esAdmin && p.precio > 0 && !p.pagado && (
                   <button
+                    onPointerDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
                       setModalPago({ isOpen: true, pedidoId: p.id });
                     }}
                     className="mb-3 w-full bg-stone-800 hover:bg-stone-700 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors border border-stone-700"
@@ -343,8 +345,10 @@ export default function DashboardView({
 
                 {!esAdmin && p.precio > 0 && !p.pagado && (
                   <button
+                    onPointerDown={(e) => e.stopPropagation()}
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
                       setModalAlias({ isOpen: true, pedido: p });
                     }}
                     className="mb-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-lg"

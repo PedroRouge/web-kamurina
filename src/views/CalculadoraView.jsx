@@ -84,7 +84,7 @@ export default function CalculadoraView({
             <p className="text-stone-500 text-xs italic mb-4">No hay pedidos disponibles para asignar precio.</p>
           ) : (
             <>
-              <select name="pedidoId" className="w-full bg-stone-950/50 p-3 rounded-xl border border-stone-800 mb-4 text-white outline-none focus:border-stone-500">
+              <select name="pedidoId" defaultValue={pedidosParaCalculadora[0]?.id} className="w-full bg-stone-950/50 p-3 rounded-xl border border-stone-800 mb-4 text-white outline-none focus:border-stone-500">
                 {pedidosParaCalculadora.map(p => <option key={p.id} value={p.id}>{p.cliente} — {p.prenda} ({p.id})</option>)}
               </select>
               <button type="submit" className="w-full bg-white text-stone-950 py-3 rounded-xl font-bold hover:bg-stone-200 transition-colors">

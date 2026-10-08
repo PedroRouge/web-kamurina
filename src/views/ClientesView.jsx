@@ -1,5 +1,5 @@
 import React from 'react';
-import { MEDIDAS_LISTA } from '../constants/medidas';
+import { MEDIDAS_GRUPOS } from '../constants/medidas';
 
 export default function ClientesView({
 
@@ -35,9 +35,16 @@ export default function ClientesView({
               </button>
               <h3 className="text-lg font-semibold cursor-pointer hover:underline" onClick={() => { setClienteSeleccionado(c); cambiarVista('detalle-cliente'); }}>{c.nombre}</h3>
                             <p className="text-stone-400 text-xs mb-4">{c.telefono}</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px] text-stone-500">
-                {MEDIDAS_LISTA.map(m => (
-                  <div key={m}>{m}: {c.medidas?.[m] || '—'}</div>
+              <div className="space-y-3 mt-2">
+                {MEDIDAS_GRUPOS.map(grupo => (
+                  <div key={grupo.label}>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-stone-600 mb-1">{grupo.label}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-0.5 text-[10px] text-stone-500">
+                      {grupo.medidas.map(m => (
+                        <div key={m}>{m}: <span className="text-stone-400">{c.medidas?.[m] || '—'}</span></div>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
 
