@@ -113,9 +113,18 @@ export default function GananciasView({
                               {p.cliente}{esArreglo ? '' : ` — ${p.prenda}`}
                             </span>
                             {esArreglo ? (
-                              <span className="text-[9px] uppercase px-2 py-0.5 rounded font-bold bg-violet-950 text-violet-300 border border-violet-900/50">
-                                ✂️ Arreglo
-                              </span>
+                              <>
+                                <span className="text-[9px] uppercase px-2 py-0.5 rounded font-bold bg-violet-950 text-violet-300 border border-violet-900/50">
+                                  ✂️ Arreglo
+                                </span>
+                                {p.precio > 0 && (
+                                  <span className={`text-[9px] uppercase px-2 py-0.5 rounded font-bold ${
+                                    p.pagado ? 'bg-emerald-950 text-emerald-300 border border-emerald-900/50' : 'bg-stone-800 text-stone-300'
+                                  }`}>
+                                    {p.pagado ? 'Pagado' : 'Pendiente'}
+                                  </span>
+                                )}
+                              </>
                             ) : (
                               <span className={`text-[9px] uppercase px-2 py-0.5 rounded font-bold ${p.pagado ? 'bg-emerald-950 text-emerald-300 border border-emerald-900/50' : 'bg-stone-800 text-stone-300'}`}>
                                 {p.pagado ? 'Pagado' : 'Pendiente'}

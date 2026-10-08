@@ -89,6 +89,7 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
   const [errorLocal, setErrorLocal] = useState('');
   const [editandoId, setEditandoId] = useState(null);
   const [errorEdicion, setErrorEdicion] = useState('');
+  const [confirmandoEliminar, setConfirmandoEliminar] = useState(null);
 
   const validar = (form) => {
     if (!form.cliente.trim()) return 'El nombre del cliente es obligatorio.';
@@ -169,6 +170,8 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
     } catch (err) {
       console.error('Error al eliminar arreglo:', err);
       mostrarToast(err.code === 'permission-denied' ? 'Sin permisos para eliminar.' : 'Error al eliminar.');
+    } finally {
+      setConfirmandoEliminar(null);
     }
   };
 
@@ -273,7 +276,7 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
                         {a.estado === 'activo' ? 'Marcar entregado' : 'Reactivar'}
                       </button>
                       <button
-                        onClick={() => eliminar(a.id)}
+                        onClick={() => setConfirmandoEliminar(a)}
                         className="text-xs text-stone-500 hover:text-red-400 transition-colors px-2 py-1.5"
                         title="Eliminar arreglo"
                       >
@@ -287,6 +290,30 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
           ))}
         </div>
       )}
+    {confirmandoEliminar && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="bg-stone-900 border border-stone-700 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+          <h3 className="font-semibold text-white">¿Eliminar arreglo?</h3>
+          <p className="text-sm text-stone-400">
+            Se eliminará el arreglo de <span className="text-white font-medium">{confirmandoEliminar.cliente}</span>. Esta acción no se puede deshacer.
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => eliminar(confirmandoEliminar.id)}
+              className="flex-1 bg-red-600 hover:bg-red-500 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
+            >
+              Sí, eliminar
+            </button>
+            <button
+              onClick={() => setConfirmandoEliminar(null)}
+              className="flex-1 border border-stone-700 text-stone-300 hover:text-white hover:border-stone-500 font-medium py-2.5 rounded-xl text-sm transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 }
