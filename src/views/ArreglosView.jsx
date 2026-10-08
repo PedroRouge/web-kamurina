@@ -2,23 +2,105 @@ import React, { useState } from 'react';
 import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
+const FORM_VACIO = { cliente: '', descripcion: '', precio: '' };
+
+function FormArreglo({ inicial, onGuardar, onCancelar, guardando, errorLocal, titulo, labelBoton }) {
+  const [form, setForm] = useState(inicial);
+
+  const handleChange = (e) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onGuardar(form);
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 space-y-4 backdrop-blur-sm"
+    >
+      <h3 className="font-semibold text-stone-200">{titulo}</h3>
+
+      {errorLocal && (
+        <div className="bg-red-950/60 border border-red-800/60 text-red-300 text-sm px-4 py-3 rounded-xl">
+          ⚠️ {errorLocal}
+        </div>
+      )}
+
+      <div className="space-y-1">
+        <label className="text-xs text-stone-400">Nombre del cliente *</label>
+        <input
+          name="cliente"
+          value={form.cliente}
+          onChange={handleChange}
+          placeholder="Ej: María González"
+          className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500"
+        />
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-xs text-stone-400">Descripción del arreglo *</label>
+        <textarea
+          name="descripcion"
+          value={form.descripcion}
+          onChange={handleChange}
+          rows={3}
+          placeholder="Ej: Subir ruedo 3cm, cambiar cierre..."
+          className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500 resize-none"
+        />
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-xs text-stone-400">Precio *</label>
+        <input
+          name="precio"
+          type="number"
+          min="0"
+          value={form.precio}
+          onChange={handleChange}
+          placeholder="0"
+          className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500"
+        />
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          disabled={guardando}
+          className="flex-1 bg-white text-stone-950 font-semibold py-2.5 rounded-xl text-sm hover:bg-stone-200 transition-colors disabled:opacity-50"
+        >
+          {guardando ? 'Guardando...' : labelBoton}
+        </button>
+        <button
+          type="button"
+          onClick={onCancelar}
+          className="px-4 py-2.5 rounded-xl text-sm text-stone-400 border border-stone-700 hover:text-stone-200 hover:border-stone-500 transition-colors"
+        >
+          Cancelar
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbierto, setFormAbierto }) {
   const [tab, setTab] = useState('activos');
   const [guardando, setGuardando] = useState(false);
   const [errorLocal, setErrorLocal] = useState('');
-  const [form, setForm] = useState({ cliente: '', descripcion: '', precio: '' });
+  const [editandoId, setEditandoId] = useState(null);
+  const [errorEdicion, setErrorEdicion] = useState('');
 
-  const handleChange = (e) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    if (errorLocal) setErrorLocal('');
+  const validar = (form) => {
+    if (!form.cliente.trim()) return 'El nombre del cliente es obligatorio.';
+    if (!form.descripcion.trim()) return 'La descripción es obligatoria.';
+    if (form.precio === '' || form.precio === null || form.precio === undefined)
+      return 'El precio es obligatorio (podés ingresar 0).';
+    return null;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.cliente.trim() || !form.descripcion.trim()) {
-      setErrorLocal('El nombre del cliente y la descripción son obligatorios.');
-      return;
-    }
+  const handleCrear = async (form) => {
+    const err = validar(form);
+    if (err) { setErrorLocal(err); return; }
     if (guardando) return;
     setGuardando(true);
     setErrorLocal('');
@@ -31,17 +113,39 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
         creadoEn: Date.now(),
       });
       mostrarToast('Arreglo registrado con éxito');
-      setForm({ cliente: '', descripcion: '', precio: '' });
       setFormAbierto(false);
     } catch (err) {
       console.error('Error al guardar arreglo:', err);
-      if (err.code === 'permission-denied') {
-        setErrorLocal('Sin permisos para guardar. Verificá tu sesión.');
-      } else if (err.code === 'resource-exhausted') {
-        setErrorLocal('Límite de Firebase alcanzado. Intentá más tarde.');
-      } else {
-        setErrorLocal('Error al guardar. Verificá tu conexión e intentá de nuevo.');
-      }
+      setErrorLocal(
+        err.code === 'permission-denied' ? 'Sin permisos para guardar. Verificá tu sesión.' :
+        err.code === 'resource-exhausted' ? 'Límite de Firebase alcanzado. Intentá más tarde.' :
+        'Error al guardar. Verificá tu conexión e intentá de nuevo.'
+      );
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleEditar = async (form) => {
+    const err = validar(form);
+    if (err) { setErrorEdicion(err); return; }
+    setGuardando(true);
+    setErrorEdicion('');
+    try {
+      await updateDoc(doc(db, 'arreglos', editandoId), {
+        cliente: form.cliente.trim(),
+        descripcion: form.descripcion.trim(),
+        precio: parseFloat(form.precio) || 0,
+      });
+      mostrarToast('Arreglo actualizado');
+      setEditandoId(null);
+    } catch (err) {
+      console.error('Error al editar arreglo:', err);
+      setErrorEdicion(
+        err.code === 'permission-denied' ? 'Sin permisos para modificar.' :
+        err.code === 'resource-exhausted' ? 'Límite de Firebase alcanzado. Intentá más tarde.' :
+        'Error al guardar. Verificá tu conexión e intentá de nuevo.'
+      );
     } finally {
       setGuardando(false);
     }
@@ -87,96 +191,37 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
       </div>
 
       {formAbierto && esAdmin && (
-        <form
-          onSubmit={handleSubmit}
-          className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 space-y-4 backdrop-blur-sm"
-        >
-          <h3 className="font-semibold text-stone-200">Registrar arreglo</h3>
-
-          {errorLocal && (
-            <div className="bg-red-950/60 border border-red-800/60 text-red-300 text-sm px-4 py-3 rounded-xl">
-              ⚠️ {errorLocal}
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <label className="text-xs text-stone-400">Nombre del cliente *</label>
-            <input
-              name="cliente"
-              value={form.cliente}
-              onChange={handleChange}
-              placeholder="Ej: María González"
-              className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs text-stone-400">Descripción del arreglo *</label>
-            <textarea
-              name="descripcion"
-              value={form.descripcion}
-              onChange={handleChange}
-              rows={3}
-              placeholder="Ej: Subir ruedo 3cm, cambiar cierre..."
-              className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500 resize-none"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs text-stone-400">Precio</label>
-            <input
-              name="precio"
-              type="number"
-              min="0"
-              value={form.precio}
-              onChange={handleChange}
-              placeholder="0"
-              className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={guardando}
-            className="w-full bg-white text-stone-950 font-semibold py-2.5 rounded-xl text-sm hover:bg-stone-200 transition-colors disabled:opacity-50"
-          >
-            {guardando ? 'Guardando...' : 'Guardar arreglo'}
-          </button>
-        </form>
+        <FormArreglo
+          inicial={FORM_VACIO}
+          onGuardar={handleCrear}
+          onCancelar={() => { setFormAbierto(false); setErrorLocal(''); }}
+          guardando={guardando}
+          errorLocal={errorLocal}
+          titulo="Registrar arreglo"
+          labelBoton="Guardar arreglo"
+        />
       )}
 
       {/* Pestañas */}
       <div className="flex gap-2">
-        <button
-          onClick={() => setTab('activos')}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-            tab === 'activos'
-              ? 'bg-white text-stone-950'
-              : 'bg-stone-900/60 text-stone-400 border border-stone-700 hover:text-stone-200'
-          }`}
-        >
-          Activos
-          {activos.length > 0 && (
-            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full font-bold ${tab === 'activos' ? 'bg-stone-200 text-stone-800' : 'bg-stone-700 text-stone-300'}`}>
-              {activos.length}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('entregados')}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-            tab === 'entregados'
-              ? 'bg-white text-stone-950'
-              : 'bg-stone-900/60 text-stone-400 border border-stone-700 hover:text-stone-200'
-          }`}
-        >
-          Entregados
-          {entregados.length > 0 && (
-            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full font-bold ${tab === 'entregados' ? 'bg-stone-200 text-stone-800' : 'bg-stone-700 text-stone-300'}`}>
-              {entregados.length}
-            </span>
-          )}
-        </button>
+        {[['activos', activos], ['entregados', entregados]].map(([key, lista]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${
+              tab === key
+                ? 'bg-white text-stone-950'
+                : 'bg-stone-900/60 text-stone-400 border border-stone-700 hover:text-stone-200'
+            }`}
+          >
+            {key.charAt(0).toUpperCase() + key.slice(1)}
+            {lista.length > 0 && (
+              <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full font-bold ${tab === key ? 'bg-stone-200 text-stone-800' : 'bg-stone-700 text-stone-300'}`}>
+                {lista.length}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {lista.length === 0 ? (
@@ -186,39 +231,56 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
       ) : (
         <div className="space-y-3">
           {lista.map(a => (
-            <div
-              key={a.id}
-              className="bg-stone-900/70 border border-stone-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-            >
-              <div className="space-y-0.5 min-w-0">
-                <p className="font-semibold text-white">{a.cliente}</p>
-                <p className="text-sm text-stone-400 line-clamp-2">{a.descripcion}</p>
-                {a.precio > 0 && (
-                  <p className="text-emerald-400 font-semibold text-sm">
-                    ${Number(a.precio).toLocaleString('es-AR')}
-                  </p>
-                )}
-              </div>
+            <div key={a.id} className="bg-stone-900/70 border border-stone-800 rounded-2xl overflow-hidden">
+              {editandoId === a.id ? (
+                <div className="p-4">
+                  <FormArreglo
+                    inicial={{ cliente: a.cliente, descripcion: a.descripcion, precio: String(a.precio) }}
+                    onGuardar={handleEditar}
+                    onCancelar={() => { setEditandoId(null); setErrorEdicion(''); }}
+                    guardando={guardando}
+                    errorLocal={errorEdicion}
+                    titulo="Editar arreglo"
+                    labelBoton="Guardar cambios"
+                  />
+                </div>
+              ) : (
+                <div className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="space-y-0.5 min-w-0">
+                    <p className="font-semibold text-white">{a.cliente}</p>
+                    <p className="text-sm text-stone-400 line-clamp-2">{a.descripcion}</p>
+                    <p className={`font-semibold text-sm ${a.precio > 0 ? 'text-emerald-400' : 'text-stone-500'}`}>
+                      ${Number(a.precio).toLocaleString('es-AR')}
+                    </p>
+                  </div>
 
-              {esAdmin && (
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => cambiarEstado(a)}
-                    className={`text-xs font-medium px-3 py-1.5 rounded-xl border transition-colors ${
-                      a.estado === 'activo'
-                        ? 'bg-amber-950/50 text-amber-300 border-amber-900/50 hover:bg-amber-900/50'
-                        : 'bg-emerald-950/50 text-emerald-400 border-emerald-900/50 hover:bg-emerald-900/50'
-                    }`}
-                  >
-                    {a.estado === 'activo' ? 'Marcar entregado' : 'Reactivar'}
-                  </button>
-                  <button
-                    onClick={() => eliminar(a.id)}
-                    className="text-xs text-stone-500 hover:text-red-400 transition-colors px-2 py-1.5"
-                    title="Eliminar arreglo"
-                  >
-                    ✕
-                  </button>
+                  {esAdmin && (
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => { setEditandoId(a.id); setErrorEdicion(''); setFormAbierto(false); }}
+                        className="text-xs font-medium px-3 py-1.5 rounded-xl border border-stone-700 text-stone-300 hover:border-stone-500 hover:text-white transition-colors"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => cambiarEstado(a)}
+                        className={`text-xs font-medium px-3 py-1.5 rounded-xl border transition-colors ${
+                          a.estado === 'activo'
+                            ? 'bg-amber-950/50 text-amber-300 border-amber-900/50 hover:bg-amber-900/50'
+                            : 'bg-emerald-950/50 text-emerald-400 border-emerald-900/50 hover:bg-emerald-900/50'
+                        }`}
+                      >
+                        {a.estado === 'activo' ? 'Marcar entregado' : 'Reactivar'}
+                      </button>
+                      <button
+                        onClick={() => eliminar(a.id)}
+                        className="text-xs text-stone-500 hover:text-red-400 transition-colors px-2 py-1.5"
+                        title="Eliminar arreglo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
