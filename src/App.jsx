@@ -104,6 +104,7 @@ export default function App() {
   const [telas, setTelas] = useState([]);
   const [avios, setAvios] = useState([]);
   const [arreglos, setArreglos] = useState([]);
+  const [formArregloAbierto, setFormArregloAbierto] = useState(false);
 
   const [calc, setCalc] = useState({ cm: 0, costoMetro: 0, avios: 0, horas: 0, valorHora: 0, margen: 0, precioPersonalizado: 0 });
 
@@ -400,6 +401,11 @@ export default function App() {
       unsubArreglos();
     };
   }, [user, esAdmin, loadingRol]);
+
+  const onNuevoArreglo = () => {
+    cambiarVista('arreglos');
+    setFormArregloAbierto(true);
+  };
 
   const metrosCalculados = parseNumero(calc.cm, 0) / 100;
   const costoMetroSanitizado = parseNumero(calc.costoMetro, 0);
@@ -1156,31 +1162,59 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
     );
   });
 
-  const gananciasPorMes = pedidos.reduce((acc, p) => {
-    const precio = parseNumero(p.precio, 0);
-    if (precio <= 0) return acc;
-    // Usamos createdAt como fuente de verdad del mes.
-    // Solo recurrimos a p.entrega si no hay createdAt Y la entrega ya pasó (es fecha real, no estimada futura).
-    let mesAnio;
-    if (p.createdAt) {
-      mesAnio = new Date(p.createdAt).toISOString().slice(0, 7);
-    } else if (p.entrega) {
-      mesAnio = p.entrega.slice(0, 7);
-    } else {
-      mesAnio = new Date().toISOString().slice(0, 7);
-    }
-    const gastos = parseNumero(p.gastos, 0);
-    const gananciaPedido = precio - gastos;
-    
-    if (!acc[mesAnio]) {
-      acc[mesAnio] = { ingresos: 0, ganancia: 0, cantidad: 0, pedidos: [] };
-    }
-    acc[mesAnio].ingresos += precio;
-    acc[mesAnio].ganancia += gananciaPedido;
-    acc[mesAnio].cantidad += 1;
-    acc[mesAnio].pedidos.push({ ...p, precio, gastos, gananciaPedido });
+  const gananciasPorMes = (() => {
+    const acc = {};
+
+    // --- Pedidos ---
+    pedidos.forEach(p => {
+      const precio = parseNumero(p.precio, 0);
+      if (precio <= 0) return;
+      let mesAnio;
+      if (p.createdAt) {
+        mesAnio = new Date(p.createdAt).toISOString().slice(0, 7);
+      } else if (p.entrega) {
+        mesAnio = p.entrega.slice(0, 7);
+      } else {
+        mesAnio = new Date().toISOString().slice(0, 7);
+      }
+      const gastos = parseNumero(p.gastos, 0);
+      const gananciaPedido = precio - gastos;
+      if (!acc[mesAnio]) acc[mesAnio] = { ingresos: 0, ganancia: 0, cantidad: 0, pedidos: [] };
+      acc[mesAnio].ingresos += precio;
+      acc[mesAnio].ganancia += gananciaPedido;
+      acc[mesAnio].cantidad += 1;
+      acc[mesAnio].pedidos.push({ ...p, precio, gastos, gananciaPedido, _tipo: 'pedido' });
+    });
+
+    // --- Arreglos ---
+    arreglos.forEach(a => {
+      const precio = parseNumero(a.precio, 0);
+      if (precio <= 0) return;
+      let mesAnio;
+      if (a.creadoEn) {
+        mesAnio = new Date(a.creadoEn).toISOString().slice(0, 7);
+      } else {
+        mesAnio = new Date().toISOString().slice(0, 7);
+      }
+      if (!acc[mesAnio]) acc[mesAnio] = { ingresos: 0, ganancia: 0, cantidad: 0, pedidos: [] };
+      acc[mesAnio].ingresos += precio;
+      acc[mesAnio].ganancia += precio;
+      acc[mesAnio].cantidad += 1;
+      acc[mesAnio].pedidos.push({
+        id: a.id,
+        cliente: a.cliente,
+        prenda: a.descripcion,
+        precio,
+        gastos: 0,
+        gananciaPedido: precio,
+        pagado: a.estado === 'entregado',
+        createdAt: a.creadoEn,
+        _tipo: 'arreglo',
+      });
+    });
+
     return acc;
-  }, {});
+  })();
 
   // Pedidos activos sin precio asignado (excluidos del reporte de ganancias)
   const pedidosSinPrecio = pedidos.filter(p =>
@@ -1341,6 +1375,8 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               setModalPago={setModalPago}
               setModalAlias={setModalAlias}
               clientes={clientes}
+              arreglos={arreglos}
+              onNuevoArreglo={onNuevoArreglo}
             />
           )}
 
@@ -1545,9 +1581,9 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
             <ArreglosView
               esAdmin={esAdmin}
               arreglos={arreglos}
-              clientes={clientes}
               mostrarToast={mostrarToast}
-              cambiarVista={cambiarVista}
+              formAbierto={formArregloAbierto}
+              setFormAbierto={setFormArregloAbierto}
             />
           )}
 
@@ -1561,6 +1597,7 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
         menuAbierto={menuAbierto}
         setMenuAbierto={setMenuAbierto}
         cambiarVista={cambiarVista}
+        onNuevoArreglo={onNuevoArreglo}
       />
 
       <ModalAlias 

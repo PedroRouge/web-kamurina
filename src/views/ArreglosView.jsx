@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 
-const ESTADOS = ['Pendiente', 'En proceso', 'Listo para retirar', 'Entregado'];
-
-export default function ArreglosView({ esAdmin, arreglos, clientes, mostrarToast, cambiarVista }) {
-  const [mostrarForm, setMostrarForm] = useState(false);
+export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbierto, setFormAbierto }) {
+  const [tab, setTab] = useState('activos');
   const [guardando, setGuardando] = useState(false);
   const [errorLocal, setErrorLocal] = useState('');
-  const [form, setForm] = useState({
-    cliente: '',
-    descripcion: '',
-    precio: '',
-    estado: 'Pendiente',
-    entrega: '',
-  });
+  const [form, setForm] = useState({ cliente: '', descripcion: '', precio: '' });
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -24,7 +16,7 @@ export default function ArreglosView({ esAdmin, arreglos, clientes, mostrarToast
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.cliente.trim() || !form.descripcion.trim()) {
-      setErrorLocal('El cliente y la descripción son obligatorios.');
+      setErrorLocal('El nombre del cliente y la descripción son obligatorios.');
       return;
     }
     if (guardando) return;
@@ -35,13 +27,12 @@ export default function ArreglosView({ esAdmin, arreglos, clientes, mostrarToast
         cliente: form.cliente.trim(),
         descripcion: form.descripcion.trim(),
         precio: parseFloat(form.precio) || 0,
-        estado: form.estado,
-        entrega: form.entrega,
-        creadoEn: serverTimestamp(),
+        estado: 'activo',
+        creadoEn: Date.now(),
       });
       mostrarToast('Arreglo registrado con éxito');
-      setForm({ cliente: '', descripcion: '', precio: '', estado: 'Pendiente', entrega: '' });
-      setMostrarForm(false);
+      setForm({ cliente: '', descripcion: '', precio: '' });
+      setFormAbierto(false);
     } catch (err) {
       console.error('Error al guardar arreglo:', err);
       if (err.code === 'permission-denied') {
@@ -56,21 +47,46 @@ export default function ArreglosView({ esAdmin, arreglos, clientes, mostrarToast
     }
   };
 
+  const cambiarEstado = async (arreglo) => {
+    const nuevoEstado = arreglo.estado === 'activo' ? 'entregado' : 'activo';
+    try {
+      await updateDoc(doc(db, 'arreglos', arreglo.id), { estado: nuevoEstado });
+      mostrarToast(nuevoEstado === 'entregado' ? 'Marcado como entregado' : 'Marcado como activo');
+    } catch (err) {
+      console.error('Error al cambiar estado:', err);
+      mostrarToast(err.code === 'permission-denied' ? 'Sin permisos para modificar.' : 'Error al cambiar estado.');
+    }
+  };
+
+  const eliminar = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'arreglos', id));
+      mostrarToast('Arreglo eliminado');
+    } catch (err) {
+      console.error('Error al eliminar arreglo:', err);
+      mostrarToast(err.code === 'permission-denied' ? 'Sin permisos para eliminar.' : 'Error al eliminar.');
+    }
+  };
+
+  const activos = arreglos.filter(a => a.estado === 'activo');
+  const entregados = arreglos.filter(a => a.estado === 'entregado');
+  const lista = tab === 'activos' ? activos : entregados;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight">Arreglos</h2>
         {esAdmin && (
           <button
-            onClick={() => { setMostrarForm(v => !v); setErrorLocal(''); }}
+            onClick={() => { setFormAbierto(v => !v); setErrorLocal(''); }}
             className="bg-white text-stone-950 font-semibold px-4 py-2 rounded-xl text-sm hover:bg-stone-200 transition-colors"
           >
-            {mostrarForm ? 'Cancelar' : '+ Nuevo arreglo'}
+            {formAbierto ? 'Cancelar' : '+ Nuevo arreglo'}
           </button>
         )}
       </div>
 
-      {mostrarForm && esAdmin && (
+      {formAbierto && esAdmin && (
         <form
           onSubmit={handleSubmit}
           className="bg-stone-900/80 border border-stone-800 rounded-2xl p-5 space-y-4 backdrop-blur-sm"
@@ -83,79 +99,40 @@ export default function ArreglosView({ esAdmin, arreglos, clientes, mostrarToast
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs text-stone-400">Cliente *</label>
-              {clientes.length > 0 ? (
-                <select
-                  name="cliente"
-                  value={form.cliente}
-                  onChange={handleChange}
-                  className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-stone-500"
-                >
-                  <option value="">Seleccioná un cliente</option>
-                  {clientes.map(c => (
-                    <option key={c.id} value={c.nombre}>{c.nombre}</option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  name="cliente"
-                  value={form.cliente}
-                  onChange={handleChange}
-                  placeholder="Nombre del cliente"
-                  className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500"
-                />
-              )}
-            </div>
+          <div className="space-y-1">
+            <label className="text-xs text-stone-400">Nombre del cliente *</label>
+            <input
+              name="cliente"
+              value={form.cliente}
+              onChange={handleChange}
+              placeholder="Ej: María González"
+              className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500"
+            />
+          </div>
 
-            <div className="space-y-1">
-              <label className="text-xs text-stone-400">Estado</label>
-              <select
-                name="estado"
-                value={form.estado}
-                onChange={handleChange}
-                className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-stone-500"
-              >
-                {ESTADOS.map(e => <option key={e} value={e}>{e}</option>)}
-              </select>
-            </div>
+          <div className="space-y-1">
+            <label className="text-xs text-stone-400">Descripción del arreglo *</label>
+            <textarea
+              name="descripcion"
+              value={form.descripcion}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Ej: Subir ruedo 3cm, cambiar cierre..."
+              className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500 resize-none"
+            />
+          </div>
 
-            <div className="space-y-1 md:col-span-2">
-              <label className="text-xs text-stone-400">Descripción del arreglo *</label>
-              <textarea
-                name="descripcion"
-                value={form.descripcion}
-                onChange={handleChange}
-                rows={3}
-                placeholder="Ej: Subir ruedo 3cm, cambiar cierre..."
-                className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500 resize-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-stone-400">Precio</label>
-              <input
-                name="precio"
-                type="number"
-                min="0"
-                value={form.precio}
-                onChange={handleChange}
-                placeholder="0"
-                className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs text-stone-400">Fecha de entrega</label>
-              <input
-                name="entrega"
-                type="date"
-                value={form.entrega}
-                onChange={handleChange}
-                className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-stone-500"
-              />
-            </div>
+          <div className="space-y-1">
+            <label className="text-xs text-stone-400">Precio</label>
+            <input
+              name="precio"
+              type="number"
+              min="0"
+              value={form.precio}
+              onChange={handleChange}
+              placeholder="0"
+              className="w-full bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 text-sm text-white placeholder-stone-500 focus:outline-none focus:border-stone-500"
+            />
           </div>
 
           <button
@@ -168,42 +145,82 @@ export default function ArreglosView({ esAdmin, arreglos, clientes, mostrarToast
         </form>
       )}
 
-      {arreglos.length === 0 ? (
+      {/* Pestañas */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setTab('activos')}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            tab === 'activos'
+              ? 'bg-white text-stone-950'
+              : 'bg-stone-900/60 text-stone-400 border border-stone-700 hover:text-stone-200'
+          }`}
+        >
+          Activos
+          {activos.length > 0 && (
+            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full font-bold ${tab === 'activos' ? 'bg-stone-200 text-stone-800' : 'bg-stone-700 text-stone-300'}`}>
+              {activos.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setTab('entregados')}
+          className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+            tab === 'entregados'
+              ? 'bg-white text-stone-950'
+              : 'bg-stone-900/60 text-stone-400 border border-stone-700 hover:text-stone-200'
+          }`}
+        >
+          Entregados
+          {entregados.length > 0 && (
+            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full font-bold ${tab === 'entregados' ? 'bg-stone-200 text-stone-800' : 'bg-stone-700 text-stone-300'}`}>
+              {entregados.length}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {lista.length === 0 ? (
         <div className="text-center py-16 text-stone-500 text-sm italic">
-          No hay arreglos registrados todavía.
+          {tab === 'activos' ? 'No hay arreglos activos.' : 'No hay arreglos entregados.'}
         </div>
       ) : (
         <div className="space-y-3">
-          {arreglos.map(a => (
+          {lista.map(a => (
             <div
               key={a.id}
               className="bg-stone-900/70 border border-stone-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
             >
-              <div className="space-y-1">
+              <div className="space-y-0.5 min-w-0">
                 <p className="font-semibold text-white">{a.cliente}</p>
-                <p className="text-sm text-stone-400">{a.descripcion}</p>
-                {a.entrega && (
-                  <p className="text-xs text-stone-500">Entrega: {a.entrega}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-3 flex-shrink-0">
+                <p className="text-sm text-stone-400 line-clamp-2">{a.descripcion}</p>
                 {a.precio > 0 && (
-                  <span className="text-emerald-400 font-semibold text-sm">
+                  <p className="text-emerald-400 font-semibold text-sm">
                     ${Number(a.precio).toLocaleString('es-AR')}
-                  </span>
+                  </p>
                 )}
-                <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
-                  a.estado === 'Entregado'
-                    ? 'bg-stone-800 text-stone-400 border-stone-700'
-                    : a.estado === 'Listo para retirar'
-                    ? 'bg-emerald-950/50 text-emerald-400 border-emerald-900/50'
-                    : a.estado === 'En proceso'
-                    ? 'bg-amber-950/50 text-amber-400 border-amber-900/50'
-                    : 'bg-stone-800/50 text-stone-300 border-stone-700'
-                }`}>
-                  {a.estado}
-                </span>
               </div>
+
+              {esAdmin && (
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => cambiarEstado(a)}
+                    className={`text-xs font-medium px-3 py-1.5 rounded-xl border transition-colors ${
+                      a.estado === 'activo'
+                        ? 'bg-amber-950/50 text-amber-300 border-amber-900/50 hover:bg-amber-900/50'
+                        : 'bg-emerald-950/50 text-emerald-400 border-emerald-900/50 hover:bg-emerald-900/50'
+                    }`}
+                  >
+                    {a.estado === 'activo' ? 'Marcar entregado' : 'Reactivar'}
+                  </button>
+                  <button
+                    onClick={() => eliminar(a.id)}
+                    className="text-xs text-stone-500 hover:text-red-400 transition-colors px-2 py-1.5"
+                    title="Eliminar arreglo"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

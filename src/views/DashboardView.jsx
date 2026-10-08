@@ -29,7 +29,9 @@ export default function DashboardView({
   setFotoAmpliada,
   setModalPago,
   setModalAlias,
-  clientes
+  clientes,
+  arreglos,
+  onNuevoArreglo,
 }) {
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
 
@@ -46,6 +48,32 @@ export default function DashboardView({
 
   return (
     <div>
+      {esAdmin && arreglos && arreglos.filter(a => a.estado === 'activo').length > 0 && (
+        <div
+          onClick={() => cambiarVista('arreglos')}
+          className="mb-4 bg-stone-900/60 border border-stone-700 px-4 py-3 rounded-2xl flex items-center justify-between cursor-pointer hover:border-stone-500 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-lg">✂️</span>
+            <div>
+              <p className="text-xs text-stone-400 uppercase tracking-wider">Arreglos activos</p>
+              <p className="text-white font-bold text-sm">{arreglos.filter(a => a.estado === 'activo').length} pendiente{arreglos.filter(a => a.estado === 'activo').length !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {onNuevoArreglo && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onNuevoArreglo(); }}
+                className="text-xs bg-stone-800 border border-stone-700 text-stone-300 px-3 py-1.5 rounded-xl hover:bg-stone-700 transition-colors"
+              >
+                + Nuevo
+              </button>
+            )}
+            <span className="text-stone-500 text-xs">Ver todos →</span>
+          </div>
+        </div>
+      )}
+
       {esAdmin && (
         <div className="hidden md:grid grid-cols-3 gap-4 mb-6">
           <div className="bg-stone-900/60 border border-stone-800 p-5 rounded-3xl flex items-center justify-between backdrop-blur-md">

@@ -131,7 +131,7 @@ export function exportarReportePDFNativo(gananciasPorMes) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
     doc.text(
-      `${datos.cantidad} pedido(s)  |  Ingresos: ${fmt(datos.ingresos)}  |  Ganancia: ${fmt(datos.ganancia)}`,
+      `${datos.cantidad} item(s)  |  Ingresos: ${fmt(datos.ingresos)}  |  Ganancia: ${fmt(datos.ganancia)}`,
       PAGE_W - MARGIN - 4,
       cursorY + 5.5,
       { align: 'right' }
@@ -141,10 +141,13 @@ export function exportarReportePDFNativo(gananciasPorMes) {
 
     // Tabla de pedidos del mes
     const filas = datos.pedidos.map((p) => [
-      p.id,
+      p._tipo === 'arreglo' ? '✂ Arreglo' : p.id,
       p.cliente || '-',
       p.prenda || '-',
-      p.pagado ? 'Pagado' : 'Pendiente',
+      p._tipo === 'arreglo'
+        ? (p.pagado ? 'Entregado' : 'Activo')
+        : (p.pagado ? 'Pagado' : 'Pendiente'),
+      p.createdAt ? new Date(p.createdAt).toLocaleDateString('es-AR') : '-',
       fmt(p.precio),
       fmt(p.gastos),
       fmt(p.gananciaPedido),
@@ -153,7 +156,7 @@ export function exportarReportePDFNativo(gananciasPorMes) {
     autoTable(doc, {
       startY: cursorY,
       margin: { left: MARGIN, right: MARGIN },
-      head: [['ID', 'Cliente', 'Prenda', 'Estado', 'Precio', 'Gastos', 'Ganancia']],
+      head: [['ID / Tipo', 'Cliente', 'Detalle', 'Estado', 'Fecha', 'Precio', 'Gastos', 'Ganancia']],
       body: filas,
       theme: 'plain',
       styles: {
@@ -174,15 +177,19 @@ export function exportarReportePDFNativo(gananciasPorMes) {
         fillColor: [250, 250, 250],
       },
       columnStyles: {
-        0: { cellWidth: 28, fontStyle: 'bold' },
-        1: { cellWidth: 36 },
+        0: { cellWidth: 24, fontStyle: 'bold' },
+        1: { cellWidth: 30 },
         2: { cellWidth: 'auto' },
-        3: { cellWidth: 22, halign: 'center' },
-        4: { cellWidth: 26, halign: 'right' },
+        3: { cellWidth: 20, halign: 'center' },
+        4: { cellWidth: 22, halign: 'center' },
         5: { cellWidth: 22, halign: 'right' },
-        6: { cellWidth: 26, halign: 'right', fontStyle: 'bold' },
+        6: { cellWidth: 18, halign: 'right' },
+        7: { cellWidth: 22, halign: 'right', fontStyle: 'bold' },
       },
       didParseCell(data) {
+        if (data.column.index === 0 && typeof data.cell.raw === 'string' && data.cell.raw.startsWith('✂')) {
+          data.cell.styles.textColor = [120, 80, 180];
+        }
         if (data.column.index === 3 && data.cell.raw === 'Pagado') {
           data.cell.styles.textColor = [40, 40, 40];
           data.cell.styles.fontStyle = 'bold';
