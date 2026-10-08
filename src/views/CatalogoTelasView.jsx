@@ -164,7 +164,7 @@ function TelaCard({ t, onBorrar, onActualizado, setTelaSeleccionada, cambiarVist
             <button
               type="button"
               onClick={() => { setEditando(false); setPreview(null); setArchivoFoto(null); }}
-              className="px-4 py-2 rounded-xl text-sm text-stone-400 border border-stone-700 hover:text-white hover:border-stone-500 transition-colors"
+              className="px-4 py-3 rounded-xl text-sm text-stone-400 border border-stone-700 hover:text-white hover:border-stone-500 transition-colors"
             >
               Cancelar
             </button>

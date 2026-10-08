@@ -17,7 +17,7 @@ export default function EditarClienteView({
       onChange={() => setFormDirty(true)}
       onSubmit={actualizarCliente}
       onKeyDown={handleKeyDownEnter}
-      className="bg-stone-900/40 p-6 md:p-8 rounded-3xl border border-stone-800 max-w-lg mx-auto"
+      className="bg-stone-900/40 p-6 md:p-8 rounded-3xl border border-stone-800 max-w-lg mx-auto scroll-pb-40"
     >
       <h2 className="text-2xl font-bold mb-6">Editar Cliente y Medidas</h2>
 
@@ -38,7 +38,7 @@ export default function EditarClienteView({
                     name={m}
                     defaultValue={clienteSeleccionado.medidas?.[m] || ''}
                     placeholder="—"
-                    className="w-full bg-stone-950 p-2 rounded-xl border border-stone-800 outline-none focus:border-stone-500 text-xs text-white"
+                    className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none focus:border-stone-500 text-xs text-white"
                   />
                 </div>
               ))}

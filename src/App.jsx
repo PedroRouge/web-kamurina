@@ -1382,7 +1382,7 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
         handleLogout={handleLogout}
       />
 
-      <main className="relative z-10 max-w-6xl mx-auto pb-28">
+      <main className="relative z-10 max-w-6xl mx-auto pb-40">
         <ErrorBoundary>
           <Suspense fallback={<ViewLoadingFallback />}>
             {vista === 'dashboard' && (

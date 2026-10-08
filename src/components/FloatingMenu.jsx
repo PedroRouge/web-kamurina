@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 
 const ITEMS = [
   { icon: '👤', label: 'Nuevo Cliente',  action: (nav) => nav('nuevo-cliente') },
@@ -27,7 +27,7 @@ export default function FloatingMenu({ esAdmin, menuAbierto, setMenuAbierto, cam
       )}
 
       {/* Items del menú */}
-      <div className="fixed bottom-24 right-4 md:right-8 z-50 flex flex-col items-end gap-2.5">
+      <div className="fixed bottom-24 right-4 md:right-8 z-50 flex flex-col items-end gap-2.5" style={{ pointerEvents: menuAbierto ? 'auto' : 'none' }}>
         {ITEMS.map((item, i) => (
           <div
             key={item.label}
