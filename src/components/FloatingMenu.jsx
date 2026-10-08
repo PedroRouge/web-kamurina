@@ -11,6 +11,7 @@ export default function FloatingMenu({ esAdmin, menuAbierto, setMenuAbierto, cam
           <button onClick={() => { cambiarVista('nuevo-pedido'); setMenuAbierto(false); }} className="bg-stone-800 p-4 rounded-xl text-sm border border-stone-700 hover:bg-stone-700 shadow-lg">Nuevo Pedido</button>
           <button onClick={() => { cambiarVista('nueva-tela'); setMenuAbierto(false); }} className="bg-stone-800 p-4 rounded-xl text-sm border border-stone-700 hover:bg-stone-700 shadow-lg">Nueva Tela</button>
           <button onClick={() => { cambiarVista('nuevo-avio'); setMenuAbierto(false); }} className="bg-stone-800 p-4 rounded-xl text-sm border border-stone-700 hover:bg-stone-700 shadow-lg">Nuevo Avío</button>
+          <button onClick={() => { cambiarVista('arreglos'); setMenuAbierto(false); }} className="bg-stone-800 p-4 rounded-xl text-sm border border-stone-700 hover:bg-stone-700 shadow-lg">Arreglos</button>
         </div>
       )}
 

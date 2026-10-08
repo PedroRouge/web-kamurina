@@ -59,6 +59,7 @@ export default function Navbar({
             <button onClick={() => cambiarVista('catalogo-avios')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'catalogo-avios' ? 'text-white font-semibold' : ''}`}>Catálogo Avios</button>
             <button onClick={() => cambiarVista('calculadora')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'calculadora' ? 'text-white font-semibold' : ''}`}>Calculadora</button>
             <button onClick={() => cambiarVista('ganancias')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'ganancias' ? 'text-white font-semibold' : ''}`}>Ganancias</button>
+            <button onClick={() => cambiarVista('arreglos')} className={`whitespace-nowrap transition-colors hover:text-stone-200 ${vista === 'arreglos' ? 'text-white font-semibold' : ''}`}>Arreglos</button>
           </>
         )}
 

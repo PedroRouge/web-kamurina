@@ -41,6 +41,7 @@ import EditarAvioView from './views/EditarAvioView';
 import DetalleAvioView from './views/DetalleAvioView';
 import CalculadoraView from './views/CalculadoraView';
 import GananciasView from './views/GananciasView';
+import ArreglosView from './views/ArreglosView';
 
 const MolderiaView = React.lazy(() => import('./views/MolderiaView'));
 
@@ -102,6 +103,7 @@ export default function App() {
   const [pedidos, setPedidos] = useState([]);
   const [telas, setTelas] = useState([]);
   const [avios, setAvios] = useState([]);
+  const [arreglos, setArreglos] = useState([]);
 
   const [calc, setCalc] = useState({ cm: 0, costoMetro: 0, avios: 0, horas: 0, valorHora: 0, margen: 0, precioPersonalizado: 0 });
 
@@ -382,11 +384,20 @@ export default function App() {
       setAvios([]);
     }
 
+    const unsubArreglos = onSnapshot(collection(db, "arreglos"), (snapshot) => {
+      const list = snapshot.docs.map(d => ({ ...d.data(), id: d.id }));
+      setArreglos(list);
+    }, (err) => {
+      console.error("Error leyendo arreglos:", err);
+      mostrarToast("Error de conexión al cargar arreglos");
+    });
+
     return () => {
       unsubClientes();
       unsubPedidos();
       unsubTelas();
       unsubAvios();
+      unsubArreglos();
     };
   }, [user, esAdmin, loadingRol]);
 
@@ -1527,6 +1538,16 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               cambiarVista={cambiarVista}
               isPdfExporting={isPdfExporting}
               pedidosSinPrecio={pedidosSinPrecio}
+            />
+          )}
+
+          {esAdmin && vista === 'arreglos' && (
+            <ArreglosView
+              esAdmin={esAdmin}
+              arreglos={arreglos}
+              clientes={clientes}
+              mostrarToast={mostrarToast}
+              cambiarVista={cambiarVista}
             />
           )}
 
