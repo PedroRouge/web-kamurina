@@ -189,12 +189,13 @@ export default function DashboardView({
           )}
         </div>
       ) : (
-        {pedidosFiltrados.length === 0 ? (
-          <p className="col-span-full text-stone-500 text-center py-10 italic">
-            {filtroEstado === 'ARCHIVADOS' ? 'No hay pedidos ocultos o archivados.' : 'No hay pedidos con ese estado.'}
-          </p>
-        ) : (
-          pedidosFiltrados.map(p => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          {pedidosFiltrados.length === 0 ? (
+            <p className="col-span-full text-stone-500 text-center py-10 italic">
+              {filtroEstado === 'ARCHIVADOS' ? 'No hay pedidos ocultos o archivados.' : 'No hay pedidos con ese estado.'}
+            </p>
+          ) : (
+            pedidosFiltrados.map(p => {
             const gastos = p.gastos || 0;
             const gananciaPedido = p.precio > 0 ? (p.precio - gastos) : 0;
             const esRechazado = p.estado === 'Rechazado';
@@ -383,7 +384,7 @@ export default function DashboardView({
             );
           })
         )}
-      </div>
+        </div>
       )}
     </div>
   );
