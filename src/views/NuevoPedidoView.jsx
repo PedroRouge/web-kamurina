@@ -16,7 +16,7 @@ export default function NuevoPedidoView({
   const telefonoRegistrado = clienteActual?.telefono || '';
 
   return (
-    <form onSubmit={crearPedido} onKeyDown={handleKeyDownEnter} className="bg-stone-900/40 p-6 md:p-8 rounded-3xl border border-stone-800 max-w-lg mx-auto">
+    <form onSubmit={crearPedido} onKeyDown={handleKeyDownEnter} className="bg-stone-900/40 p-6 md:p-8 rounded-3xl border border-stone-800 max-w-lg mx-auto w-full">
       <h2 className="text-2xl font-bold mb-6">{esAdmin ? 'Crear Nuevo Pedido' : 'Solicitar Nuevo Pedido'}</h2>
        
       {esAdmin ? (

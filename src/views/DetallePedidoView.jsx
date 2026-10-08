@@ -313,11 +313,11 @@ export default function DetallePedidoView({
       )}
 
       {/* Botón de eliminación / descarte del pedido */}
-      <div className="mt-8 pt-6 border-t border-stone-800 flex justify-between items-center">
+      <div className="mt-8 pt-6 border-t border-stone-800 flex flex-col-reverse sm:flex-row justify-between items-center gap-4">
         <button
           type="button"
           onClick={() => cambiarVista('dashboard')}
-          className="text-stone-400 hover:text-white bg-stone-800/60 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors"
+          className="text-stone-400 hover:text-white bg-stone-800/60 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors w-full sm:w-auto"
         >
           ← Volver al Dashboard
         </button>
@@ -359,7 +359,7 @@ export default function DetallePedidoView({
               });
             }
           }}
-          className="bg-red-950/30 hover:bg-red-900/40 text-red-400 border border-red-900/50 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
+          className="bg-red-950/30 hover:bg-red-900/40 text-red-400 border border-red-900/50 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 w-full sm:w-auto"
           title={esAdmin ? "Eliminar o archivar pedido" : "Eliminar pedido"}
         >
           🗑️ {esRechazado ? "Eliminar Pedido Rechazado" : "Eliminar Pedido"}
