@@ -234,7 +234,7 @@ export default function DashboardView({
                       });
                     }
                   }} 
-                  className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs p-1"
+                  className="tap-target absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs p-1"
                   title={esAdmin ? "Opciones de eliminación / archivo" : (esRechazado ? "Eliminar pedido rechazado" : "Cancelar / eliminar solicitud")}
                 >
                   ✕
@@ -337,7 +337,7 @@ export default function DashboardView({
                       e.preventDefault();
                       setModalPago({ isOpen: true, pedidoId: p.id });
                     }}
-                    className="mb-3 w-full bg-stone-800 hover:bg-stone-700 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors border border-stone-700"
+                    className="tap-target mb-3 w-full bg-stone-800 hover:bg-stone-700 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors border border-stone-700"
                   >
                     💳 Registrar Pago
                   </button>
@@ -351,7 +351,7 @@ export default function DashboardView({
                       e.preventDefault();
                       setModalAlias({ isOpen: true, pedido: p });
                     }}
-                    className="mb-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-lg"
+                    className="tap-target mb-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors shadow-lg"
                   >
                     💳 Pagar (Ver Alias)
                   </button>

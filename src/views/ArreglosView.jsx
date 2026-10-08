@@ -261,13 +261,13 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
                     <div className="flex items-center gap-2 flex-shrink-0">
                       <button
                         onClick={() => { setEditandoId(a.id); setErrorEdicion(''); setFormAbierto(false); }}
-                        className="text-xs font-medium px-3 py-1.5 rounded-xl border border-stone-700 text-stone-300 hover:border-stone-500 hover:text-white transition-colors"
+                        className="tap-target text-xs font-medium px-3 py-1.5 rounded-xl border border-stone-700 text-stone-300 hover:border-stone-500 hover:text-white transition-colors"
                       >
                         Editar
                       </button>
                       <button
                         onClick={() => cambiarEstado(a)}
-                        className={`text-xs font-medium px-3 py-1.5 rounded-xl border transition-colors ${
+                        className={`tap-target text-xs font-medium px-3 py-1.5 rounded-xl border transition-colors ${
                           a.estado === 'activo'
                             ? 'bg-amber-950/50 text-amber-300 border-amber-900/50 hover:bg-amber-900/50'
                             : 'bg-emerald-950/50 text-emerald-400 border-emerald-900/50 hover:bg-emerald-900/50'
@@ -277,7 +277,7 @@ export default function ArreglosView({ esAdmin, arreglos, mostrarToast, formAbie
                       </button>
                       <button
                         onClick={() => setConfirmandoEliminar(a)}
-                        className="text-xs text-stone-500 hover:text-red-400 transition-colors px-2 py-1.5"
+                        className="tap-target text-xs text-stone-500 hover:text-red-400 transition-colors px-2 py-1.5"
                         title="Eliminar arreglo"
                       >
                         ✕

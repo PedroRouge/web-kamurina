@@ -40,7 +40,7 @@ export default function DetallePedidoView({
           <h2 className="text-xl md:text-2xl font-bold mb-1">Detalle del Pedido</h2>
           <p className="text-stone-400 text-sm">Cliente: <strong className="text-white">{pedidoSeleccionado.cliente}</strong> <span className="text-stone-500">(ID: {pedidoSeleccionado.id})</span></p>
         </div>
-        <button onClick={() => cambiarVista('dashboard')} className="flex-shrink-0 text-stone-400 hover:text-white bg-stone-800/50 px-3 py-1.5 rounded-xl text-xs hover:bg-stone-700">Volver</button>
+        <button onClick={() => cambiarVista('dashboard')} className="tap-target flex-shrink-0 text-stone-400 hover:text-white bg-stone-800/50 px-3 py-1.5 rounded-xl text-xs hover:bg-stone-700">Volver</button>
       </div>
 
       {esRechazado && pedidoSeleccionado.motivoRechazo && (
@@ -186,7 +186,7 @@ export default function DetallePedidoView({
                         action: () => eliminarPagoParcial(pago.id)
                       });
                     }}
-                    className="text-stone-400 hover:text-red-400 p-1 font-bold text-sm"
+                    className="tap-target text-stone-400 hover:text-red-400 p-1 font-bold text-sm"
                     title="Eliminar pago"
                   >
                     ✕
@@ -268,7 +268,7 @@ export default function DetallePedidoView({
                       }
                     });
                   }}
-                  className="absolute top-2 right-2 bg-stone-950/80 text-stone-400 hover:text-red-400 w-6 h-6 rounded-full flex items-center justify-center text-xs border border-stone-800"
+                  className="tap-target absolute top-2 right-2 bg-stone-950/80 text-stone-400 hover:text-red-400 w-8 h-8 rounded-full flex items-center justify-center text-xs border border-stone-800"
                   title="Eliminar foto"
                 >
                   ✕
