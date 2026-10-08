@@ -1520,6 +1520,9 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               setModalConfirm={setModalConfirm}
               borrarTela={iniciarBorradoTela}
               actualizarStock={actualizarStock}
+              subirOEncolarFoto={subirOEncolarFoto}
+              telas={telas}
+              setTelas={setTelas}
             />
           )}
 
@@ -1534,6 +1537,9 @@ const borrarPedidoDefinitivo = async (idOrObj) => {
               borrarAvio={borrarAvio}
               actualizarCantidadAvio={actualizarCantidadAvio}
               actualizarPrecioAvio={actualizarPrecioAvio}
+              subirOEncolarFoto={subirOEncolarFoto}
+              avios={avios}
+              setAvios={setAvios}
             />
           )}
 
