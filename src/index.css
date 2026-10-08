@@ -2,14 +2,21 @@
 
 /* Elimina el delay de 300ms en iOS/Android en todos los elementos interactivos.
    Esto solo afecta el comportamiento de scroll/zoom, no el click en sí. */
-button, a, [role="button"], select, input, textarea {
+button, a, [role="button"], select, input, textarea, .interactive {
   touch-action: manipulation;
+}
+
+/* Suprime el highlight azul/gris del navegador en taps móviles */
+button, a, [role="button"], .interactive {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Clase utilitaria para botones que necesitan área mínima de toque en mobile */
 .tap-target {
   min-height: 44px;
   min-width: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @keyframes toastIn {

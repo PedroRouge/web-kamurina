@@ -1,5 +1,16 @@
 export const handleKeyDownEnter = (e) => {
-  if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.type !== 'submit') {
+  // No interferir con: textarea, botones submit, botones normales, selects
+  const tag = e.target.tagName;
+  const type = e.target.type;
+  if (
+    e.key === 'Enter' &&
+    tag !== 'TEXTAREA' &&
+    tag !== 'BUTTON' &&
+    tag !== 'SELECT' &&
+    type !== 'submit' &&
+    type !== 'button' &&
+    type !== 'file'
+  ) {
     e.preventDefault();
     const form = e.target.form;
     if (form) {

@@ -47,9 +47,10 @@ export default function DashboardView({
   return (
     <div>
       {esAdmin && arreglos && arreglos.filter(a => a.estado === 'activo').length > 0 && (
-        <div
+        <button
+          type="button"
           onClick={() => cambiarVista('arreglos')}
-          className="mb-4 bg-stone-900/60 border border-stone-700 px-4 py-3 rounded-2xl flex items-center justify-between cursor-pointer hover:border-stone-500 transition-colors gap-3"
+          className="w-full mb-4 bg-stone-900/60 border border-stone-700 px-4 py-3 rounded-2xl flex items-center justify-between cursor-pointer hover:border-stone-500 transition-colors gap-3 text-left"
         >
           <div className="flex items-center gap-3 min-w-0">
             <span className="text-lg flex-shrink-0">✂️</span>
@@ -69,7 +70,7 @@ export default function DashboardView({
             )}
             <span className="text-stone-500 text-xs whitespace-nowrap">Ver todos →</span>
           </div>
-        </div>
+        </button>
       )}
 
       {esAdmin && (
@@ -88,16 +89,17 @@ export default function DashboardView({
             </div>
             <div className="w-10 h-10 rounded-2xl bg-emerald-950/50 border border-emerald-900/40 flex items-center justify-center text-emerald-300 font-bold">💰</div>
           </div>
-          <div 
+          <button
+            type="button"
             onClick={() => cambiarVista('solicitudes')}
-            className="bg-stone-900/60 border border-amber-900/40 p-5 rounded-3xl flex items-center justify-between backdrop-blur-md cursor-pointer hover:border-amber-700 transition-colors"
+            className="bg-stone-900/60 border border-amber-900/40 p-5 rounded-3xl flex items-center justify-between backdrop-blur-md cursor-pointer hover:border-amber-700 transition-colors text-left"
           >
             <div>
               <p className="text-xs text-amber-400 uppercase tracking-wider mb-1">Solicitudes Pendientes</p>
               <h3 className="text-2xl font-bold text-amber-300">{solicitudesPendientesAdmin.length}</h3>
             </div>
             <div className="w-10 h-10 rounded-2xl bg-amber-950/60 border border-amber-900/50 flex items-center justify-center text-amber-300 font-bold">🔔</div>
-          </div>
+          </button>
         </div>
       )}
 
@@ -202,7 +204,10 @@ export default function DashboardView({
               <div 
                 key={p.id} 
                 onClick={() => { setPedidoSeleccionado(p); cambiarVista('detalle-pedido'); }} 
-                className={`bg-stone-900/40 backdrop-blur-md border p-6 rounded-3xl relative cursor-pointer transition-colors ${esRechazado ? 'border-red-900/60 bg-red-950/10' : 'border-stone-800 hover:border-stone-600'}`}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && (setPedidoSeleccionado(p), cambiarVista('detalle-pedido'))}
+                className={`interactive bg-stone-900/40 backdrop-blur-md border p-6 rounded-3xl relative cursor-pointer transition-colors ${esRechazado ? 'border-red-900/60 bg-red-950/10' : 'border-stone-800 hover:border-stone-600'}`}
               >
                 <button 
                   onClick={(e) => { 
@@ -315,6 +320,7 @@ export default function DashboardView({
                         key={i} 
                         src={img} 
                         alt="Pedido" 
+                        role="button"
                         className="w-16 h-16 object-contain bg-stone-950/60 rounded-xl mb-1 border border-stone-800 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" 
                         onClick={(e) => { e.stopPropagation(); setFotoAmpliada(img); }}
                       />

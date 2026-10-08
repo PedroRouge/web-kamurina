@@ -354,7 +354,7 @@ export default function MolderiaView({
               <span className="text-xs text-stone-400 font-medium">Zoom:</span>
               <button
                 onClick={() => setZoom(z => Math.max(0.3, Number((z - 0.15).toFixed(2))))}
-                className="bg-stone-800 hover:bg-stone-700 text-white w-7 h-7 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                className="tap-target bg-stone-800 hover:bg-stone-700 text-white w-9 h-9 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center"
                 title="Alejar"
               >
                 -
@@ -364,7 +364,7 @@ export default function MolderiaView({
               </span>
               <button
                 onClick={() => setZoom(z => Math.min(2.5, Number((z + 0.15).toFixed(2))))}
-                className="bg-stone-800 hover:bg-stone-700 text-white w-7 h-7 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                className="tap-target bg-stone-800 hover:bg-stone-700 text-white w-9 h-9 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center justify-center"
                 title="Acercar"
               >
                 +

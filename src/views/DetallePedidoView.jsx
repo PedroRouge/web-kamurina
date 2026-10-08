@@ -242,6 +242,7 @@ export default function DetallePedidoView({
               <img 
                 src={img} 
                 alt={`Trabajo ${i+1}`} 
+                role="button"
                 className="w-32 h-32 object-contain bg-stone-950/60 rounded-xl border border-stone-800 cursor-pointer hover:opacity-80 transition-opacity" 
                 onClick={() => setFotoAmpliada(img)}
               />

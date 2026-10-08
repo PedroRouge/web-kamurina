@@ -61,7 +61,7 @@ function TelaCard({ t, onBorrar, onActualizado, setTelaSeleccionada, cambiarVist
             <h3 className="font-bold text-white leading-tight">{t.nombre}</h3>
             <button
               onClick={onBorrar}
-              className="flex-shrink-0 text-stone-600 hover:text-red-400 transition-colors text-xs p-1"
+              className="tap-target flex-shrink-0 text-stone-600 hover:text-red-400 transition-colors text-xs p-1"
               title="Eliminar"
             >✕</button>
           </div>

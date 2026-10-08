@@ -29,11 +29,17 @@ export default function ClientesView({
                   e.stopPropagation(); 
                   borrarCliente(c); 
                 }} 
-                className="absolute top-4 right-4 text-stone-600 hover:text-red-400"
+                className="tap-target absolute top-4 right-4 text-stone-600 hover:text-red-400 p-1"
               >
                 ✕
               </button>
-              <h3 className="text-lg font-semibold cursor-pointer hover:underline" onClick={() => { setClienteSeleccionado(c); cambiarVista('detalle-cliente'); }}>{c.nombre}</h3>
+              <h3
+                className="text-lg font-semibold cursor-pointer hover:underline interactive"
+                onClick={() => { setClienteSeleccionado(c); cambiarVista('detalle-cliente'); }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && (setClienteSeleccionado(c), cambiarVista('detalle-cliente'))}
+              >{c.nombre}</h3>
                             <p className="text-stone-400 text-xs mb-4">{c.telefono}</p>
               <div className="space-y-3 mt-2">
                 {MEDIDAS_GRUPOS.map(grupo => (

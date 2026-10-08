@@ -79,7 +79,7 @@ export default function DetalleClienteView({
                         borrarPedidoDefinitivo(p.id);
                       }
                     }} 
-                    className="absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs p-1"
+                    className="tap-target absolute top-4 right-4 text-stone-600 hover:text-red-400 text-xs p-1"
                     title="Eliminar definitivamente"
                   >
                     ✕
@@ -139,6 +139,7 @@ export default function DetalleClienteView({
                           <img 
                             src={img} 
                             alt={`Trabajo ${i+1}`} 
+                            role="button"
                             className="w-24 h-24 object-contain bg-stone-950/60 rounded-xl border border-stone-800 cursor-pointer hover:opacity-80 transition-opacity" 
                             onClick={() => setFotoAmpliada(img)}
                           />
@@ -163,7 +164,7 @@ export default function DetalleClienteView({
                                 }
                               });
                             }}
-                            className="absolute top-1 right-1 bg-stone-950/80 text-stone-400 hover:text-red-400 w-5 h-5 rounded-full flex items-center justify-center text-[10px] border border-stone-800"
+                            className="tap-target absolute top-1 right-1 bg-stone-950/80 text-stone-400 hover:text-red-400 w-7 h-7 rounded-full flex items-center justify-center text-[10px] border border-stone-800"
                             title="Eliminar foto"
                           >
                             ✕

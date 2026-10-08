@@ -18,8 +18,11 @@ export default function Navbar({
       {/* ── MOBILE HEADER ── */}
       <div className="flex md:hidden items-center justify-between gap-2 border-b border-stone-800/80 pb-3">
         <h1
-          className="text-xl font-bold tracking-tighter cursor-pointer flex-shrink-0"
+          className="text-xl font-bold tracking-tighter cursor-pointer flex-shrink-0 interactive"
           onClick={() => navegar('dashboard')}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === 'Enter' && navegar('dashboard')}
         >
           Atelier Kamurina{' '}
           <span className="text-[10px] bg-stone-800 text-stone-300 px-1.5 py-0.5 rounded-full ml-1">
@@ -34,19 +37,20 @@ export default function Navbar({
                 <span className="text-[10px] text-stone-400">📦</span>
                 <span className="text-xs font-bold text-white">{totalPedidosActivos}</span>
               </div>
-              <div
+              <button
                 onClick={() => navegar('solicitudes')}
-                className="bg-stone-900/80 border border-amber-950 px-2 py-1 rounded-xl flex items-center gap-1 cursor-pointer"
+                className="tap-target bg-stone-900/80 border border-amber-950 px-2 py-1 rounded-xl flex items-center gap-1"
+                aria-label={`Solicitudes pendientes: ${solicitudesPendientesAdmin.length}`}
               >
                 <span className="text-[10px] text-amber-400">🔔</span>
                 <span className="text-xs font-bold text-amber-300">{solicitudesPendientesAdmin.length}</span>
-              </div>
+              </button>
             </>
           )}
           {/* Hamburguesa */}
           <button
             onClick={() => setMenuMobileAbierto(v => !v)}
-            className="ml-1 p-2 rounded-xl bg-stone-900/80 border border-stone-800 text-stone-300 hover:text-white transition-colors"
+            className="tap-target ml-1 p-2.5 rounded-xl bg-stone-900/80 border border-stone-800 text-stone-300 hover:text-white transition-colors"
             aria-label="Menú"
           >
             {menuMobileAbierto ? (
