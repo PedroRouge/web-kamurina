@@ -189,7 +189,7 @@ export default function DashboardView({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 items-stretch">
           {pedidosFiltrados.length === 0 ? (
             <p className="col-span-full text-stone-500 text-center py-10 italic">
               {filtroEstado === 'ARCHIVADOS' ? 'No hay pedidos ocultos o archivados.' : 'No hay pedidos con ese estado.'}
@@ -207,7 +207,7 @@ export default function DashboardView({
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && (setPedidoSeleccionado(p), cambiarVista('detalle-pedido'))}
-                className={`interactive bg-stone-900/40 backdrop-blur-md border p-6 rounded-3xl relative cursor-pointer transition-colors ${esRechazado ? 'border-red-900/60 bg-red-950/10' : 'border-stone-800 hover:border-stone-600'}`}
+                className={`interactive bg-stone-900/40 backdrop-blur-md border p-6 rounded-3xl relative cursor-pointer transition-colors flex flex-col h-full ${esRechazado ? 'border-red-900/60 bg-red-950/10' : 'border-stone-800 hover:border-stone-600'}`}
               >
                 <button 
                   onClick={(e) => { 
@@ -331,7 +331,7 @@ export default function DashboardView({
                   </div>
                 )}
                 
-                <div className="mb-4">
+                <div className="mt-auto mb-4">
                   <p className="text-xl font-bold">{p.precio > 0 ? `$${p.precio.toLocaleString()}` : 'Presupuesto a confirmar'}</p>
                   {esAdmin && p.precio > 0 && (
                     <p className="text-xs text-emerald-400 font-medium">Ganancia: +${gananciaPedido.toLocaleString()}</p>
