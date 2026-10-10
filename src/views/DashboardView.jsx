@@ -245,9 +245,12 @@ export default function DashboardView({
                   ✕
                 </button>
                 
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-[10px] uppercase tracking-widest text-stone-500">{p.id}</span>
-                  <span className={`text-[10px] uppercase px-2 py-1 rounded font-semibold ${
+                <div className="flex justify-between items-center gap-3 mb-3 pr-10">
+                  <span className="text-[10px] uppercase tracking-widest text-stone-500 break-all">{p.id}</span>
+                </div>
+
+                <div className="mb-4">
+                  <span className={`inline-block text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-md font-semibold ${
                     esRechazado 
                       ? 'bg-red-950 text-red-400 border border-red-900/50' 
                       : p.estado === 'Pendiente de Aprobación'
