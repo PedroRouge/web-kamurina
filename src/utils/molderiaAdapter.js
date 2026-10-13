@@ -1,3 +1,5 @@
+import { obtenerMedida } from '../constants/medidas';
+
 /**
  * Diccionario de traducción de nombres técnicos de FreeSewing (Inglés) a Español
  */
@@ -92,30 +94,30 @@ function numCm(val, fallback = 0) {
  */
 export function adaptarMedidasCliente(medidasCliente = {}) {
   const c = {};
-  // Extraer valores limpios en centímetros
-  const cuelloCm = numCm(medidasCliente['Contorno de Cuello']);
-  const pechoCm = numCm(medidasCliente['Ancho de Pecho']);
-  const bustoCm = numCm(medidasCliente['Contorno de Busto']);
-  const altBustoCm = numCm(medidasCliente['Altura de Busto']);
-  const sepBustoCm = numCm(medidasCliente['Separación de Busto']);
-  const radioCm = numCm(medidasCliente['Radio']);
+  // Extraer valores limpios en centímetros soportando nombres canónicos y alias
+  const cuelloCm = numCm(obtenerMedida(medidasCliente, 'Contorno cuello'));
+  const pechoCm = numCm(obtenerMedida(medidasCliente, 'Ancho de pecho'));
+  const bustoCm = numCm(obtenerMedida(medidasCliente, 'Ancho de pecho'));
+  const altBustoCm = numCm(obtenerMedida(medidasCliente, 'Altura de busto'));
+  const sepBustoCm = numCm(obtenerMedida(medidasCliente, 'Separación de busto'));
+  const radioCm = numCm(obtenerMedida(medidasCliente, 'Radio'));
 
-  const hombrosCm = numCm(medidasCliente['Ancho de Hombros']);
-  const espaldaCm = numCm(medidasCliente['Ancho de Espalda']);
-  const largoEspaldaCm = numCm(medidasCliente['Largo de Espalda']);
+  const hombrosCm = numCm(obtenerMedida(medidasCliente, 'Ancho de hombros'));
+  const espaldaCm = numCm(obtenerMedida(medidasCliente, 'Ancho de espalda'));
+  const largoEspaldaCm = numCm(obtenerMedida(medidasCliente, 'Largo de espalda'));
 
-  const cinturaCm = numCm(medidasCliente['Contorno de Cintura']);
-  const caderaCm = numCm(medidasCliente['Contorno de Cadera']);
-  const altCaderaCm = numCm(medidasCliente['Altura de Cadera']);
+  const cinturaCm = numCm(obtenerMedida(medidasCliente, 'Contorno cintura'));
+  const caderaCm = numCm(obtenerMedida(medidasCliente, 'Contorno cadera'));
+  const altCaderaCm = numCm(obtenerMedida(medidasCliente, 'Altura de cadera'));
 
-  const brazoCm = numCm(medidasCliente['Contorno de Brazo']);
-  const munecaCm = numCm(medidasCliente['Contorno de Muñeca']);
-  const mangaCm = numCm(medidasCliente['Largo de Manga']);
-  const codoCm = numCm(medidasCliente['Altura de Codo']);
+  const brazoCm = numCm(obtenerMedida(medidasCliente, 'Contorno de brazo'));
+  const munecaCm = numCm(obtenerMedida(medidasCliente, 'Contorno de muñeca'));
+  const mangaCm = numCm(obtenerMedida(medidasCliente, 'Largo de manga'));
+  const codoCm = numCm(obtenerMedida(medidasCliente, 'Altura de codo'));
 
-  const tiroCm = numCm(medidasCliente['Altura Tiro de Pantalón']);
-  const pantalonCm = numCm(medidasCliente['Largo de Pantalón']);
-  const rodillaCm = numCm(medidasCliente['Altura de Rodilla']);
+  const tiroCm = numCm(obtenerMedida(medidasCliente, 'Tiro de pantalón'));
+  const pantalonCm = numCm(obtenerMedida(medidasCliente, 'Largo pantalón'));
+  const rodillaCm = numCm(obtenerMedida(medidasCliente, 'Altura de rodilla'));
 
   // Convertir a milímetros (cm * 10)
   if (cuelloCm > 0) {

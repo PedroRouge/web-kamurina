@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { CATALOGO_MOLDES } from '../utils/molderiaCatalog';
 import { trazarMoldeSeguro } from '../utils/molderiaEngine';
 import { exportarMoldeAPdfA4 } from '../utils/molderiaPdfGenerator';
+import { obtenerMedida } from '../constants/medidas';
 
 export default function MolderiaView({
   clientes = [],
@@ -220,19 +221,19 @@ export default function MolderiaView({
                 </div>
                 <div className="flex justify-between text-stone-300">
                   <span className="text-stone-500">Busto/Pecho:</span>
-                  <span>{clienteActivo.medidas?.['Contorno de Busto'] || clienteActivo.medidas?.['Ancho de Pecho'] || '—'} cm</span>
+                  <span>{obtenerMedida(clienteActivo.medidas, 'Ancho de pecho') || '—'} cm</span>
                 </div>
                 <div className="flex justify-between text-stone-300">
                   <span className="text-stone-500">Cintura:</span>
-                  <span>{clienteActivo.medidas?.['Contorno de Cintura'] || '—'} cm</span>
+                  <span>{obtenerMedida(clienteActivo.medidas, 'Contorno cintura') || '—'} cm</span>
                 </div>
                 <div className="flex justify-between text-stone-300">
                   <span className="text-stone-500">Cadera:</span>
-                  <span>{clienteActivo.medidas?.['Contorno de Cadera'] || '—'} cm</span>
+                  <span>{obtenerMedida(clienteActivo.medidas, 'Contorno cadera') || '—'} cm</span>
                 </div>
                 <div className="flex justify-between text-stone-300">
                   <span className="text-stone-500">Largo Espalda:</span>
-                  <span>{clienteActivo.medidas?.['Largo de Espalda'] || '—'} cm</span>
+                  <span>{obtenerMedida(clienteActivo.medidas, 'Largo de espalda') || '—'} cm</span>
                 </div>
               </div>
             ) : (

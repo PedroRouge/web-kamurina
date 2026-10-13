@@ -4,6 +4,8 @@
  * Despiece geométrico específico para los 40 patrones del catálogo, con rotulación y graduación real.
  */
 
+import { obtenerMedida } from '../constants/medidas';
+
 // Utilidad para formatear números a 1 decimal
 const f = (n) => (typeof n === 'number' ? n.toFixed(1) : n);
 
@@ -1297,21 +1299,27 @@ export const GENERADORES_ESPECIFICOS = {
  * Trazador Principal y Universal de Moldería
  */
 export function trazarMoldeSeguro(tipoMoldeId, medidasCliente = {}, opciones = {}) {
+  const val = (nom) => {
+    const raw = obtenerMedida(medidasCliente, nom);
+    const parsed = parseFloat(raw);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
   const m = {
-    pecho: parseFloat(medidasCliente['Ancho de Pecho']) || parseFloat(medidasCliente['Contorno de Busto']) || 96,
-    busto: parseFloat(medidasCliente['Contorno de Busto']) || parseFloat(medidasCliente['Ancho de Pecho']) || 94,
-    cintura: parseFloat(medidasCliente['Contorno de Cintura']) || 72,
-    cadera: parseFloat(medidasCliente['Contorno de Cadera']) || 98,
-    espalda: parseFloat(medidasCliente['Ancho de Espalda']) || parseFloat(medidasCliente['Ancho de Hombros']) || 38,
-    cuello: parseFloat(medidasCliente['Contorno de Cuello']) || 37,
-    largoEspalda: parseFloat(medidasCliente['Largo de Espalda']) || parseFloat(medidasCliente['Largo de Talle']) || 62,
-    largoManga: parseFloat(medidasCliente['Largo de Manga']) || 58,
-    brazo: parseFloat(medidasCliente['Contorno de Brazo']) || 30,
-    largoPantalon: parseFloat(medidasCliente['Largo de Pantalón']) || 98,
-    tiro: parseFloat(medidasCliente['Altura Tiro de Pantalón']) || parseFloat(medidasCliente['Altura de Tiro']) || 26,
-    altoCadera: parseFloat(medidasCliente['Altura de Cadera']) || 20,
-    altoBusto: parseFloat(medidasCliente['Altura de Busto']) || 26,
-    largoFalda: parseFloat(medidasCliente['Largo de Falda']) || 58
+    pecho: val('Ancho de pecho') || 96,
+    busto: val('Ancho de pecho') || 94,
+    cintura: val('Contorno cintura') || 72,
+    cadera: val('Contorno cadera') || 98,
+    espalda: val('Ancho de espalda') || val('Ancho de hombros') || 38,
+    cuello: val('Contorno cuello') || 37,
+    largoEspalda: val('Largo de espalda') || 62,
+    largoManga: val('Largo de manga') || 58,
+    brazo: val('Contorno de brazo') || 30,
+    largoPantalon: val('Largo pantalón') || 98,
+    tiro: val('Tiro de pantalón') || 26,
+    altoCadera: val('Altura de cadera') || 20,
+    altoBusto: val('Altura de busto') || 26,
+    largoFalda: val('Largo de falda') || 58
   };
 
   const cliente = {

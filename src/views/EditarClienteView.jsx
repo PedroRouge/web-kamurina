@@ -1,5 +1,5 @@
 import React from 'react';
-import { MEDIDAS_GRUPOS } from '../constants/medidas';
+import { MEDIDAS_LISTA, obtenerMedida } from '../constants/medidas';
 
 export default function EditarClienteView({
   clienteSeleccionado,
@@ -26,25 +26,26 @@ export default function EditarClienteView({
         <input name="telefono" defaultValue={clienteSeleccionado.telefono} placeholder="Teléfono (solo números)" className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none focus:border-stone-500 text-sm" required />
       </div>
 
-      <div className="space-y-5 mb-6">
-        {MEDIDAS_GRUPOS.map(grupo => (
-          <div key={grupo.label}>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-2 pl-1">{grupo.label}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {grupo.medidas.map(m => (
-                <div key={m}>
-                  <label className="text-[10px] text-stone-500 pl-1 block mb-0.5">{m}</label>
-                  <input
-                    name={m}
-                    defaultValue={clienteSeleccionado.medidas?.[m] || ''}
-                    placeholder="—"
-                    className="w-full bg-stone-950 p-3 rounded-xl border border-stone-800 outline-none focus:border-stone-500 text-xs text-white"
-                  />
-                </div>
-              ))}
+      <div className="space-y-2 mb-6">
+        <label className="text-xs font-bold text-stone-400 uppercase tracking-wider block mb-2">
+          Medidas (en cm)
+        </label>
+        <div className="flex flex-col gap-2">
+          {MEDIDAS_LISTA.map(m => (
+            <div key={m} className="flex items-center justify-between gap-3 bg-stone-950/60 p-2.5 rounded-xl border border-stone-800">
+              <label htmlFor={`medida-${m}`} className="text-xs text-stone-300 font-medium">
+                {m}
+              </label>
+              <input
+                id={`medida-${m}`}
+                name={m}
+                defaultValue={obtenerMedida(clienteSeleccionado.medidas, m)}
+                placeholder="—"
+                className="w-28 bg-stone-900 p-2 rounded-lg border border-stone-800 outline-none focus:border-stone-500 text-xs text-white text-right"
+              />
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <div className="flex gap-3">

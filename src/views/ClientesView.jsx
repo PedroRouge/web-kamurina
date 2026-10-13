@@ -1,5 +1,5 @@
 import React from 'react';
-import { MEDIDAS_GRUPOS } from '../constants/medidas';
+import { MEDIDAS_LISTA, obtenerMedida } from '../constants/medidas';
 
 export default function ClientesView({
 
@@ -40,20 +40,19 @@ export default function ClientesView({
                 tabIndex={0}
                 onKeyDown={(e) => e.key === 'Enter' && (setClienteSeleccionado(c), cambiarVista('detalle-cliente'))}
               >{c.nombre}</h3>
-                            <p className="text-stone-400 text-xs mb-4">{c.telefono}</p>
-              <div className="space-y-3 mt-2">
-                {MEDIDAS_GRUPOS.map(grupo => (
-                  <div key={grupo.label}>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-stone-600 mb-1">{grupo.label}</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-0.5 text-[10px] text-stone-500">
-                      {grupo.medidas.map(m => (
-                        <div key={m}>{m}: <span className="text-stone-400">{c.medidas?.[m] || '—'}</span></div>
-                      ))}
+              <p className="text-stone-400 text-xs mb-4">{c.telefono}</p>
+              
+              <div className="mt-3 divide-y divide-stone-800/60 bg-stone-950/40 px-3 py-1.5 rounded-2xl border border-stone-800/80">
+                {MEDIDAS_LISTA.map(m => {
+                  const val = obtenerMedida(c.medidas, m);
+                  return (
+                    <div key={m} className="flex items-center justify-between py-1 text-[11px]">
+                      <span className="text-stone-400">{m}</span>
+                      <span className="font-medium text-stone-200">{val || '—'}</span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
-
             </div>
           ))
         )}

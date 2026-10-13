@@ -8,7 +8,7 @@
     "name": "rolldown-runtime"
   },
   "index.html": {
-    "file": "assets/index-0ivFFBV0.js",
+    "file": "assets/index-Dg9Q4kBC.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -23,11 +23,11 @@
       "src/views/MolderiaView.jsx"
     ],
     "css": [
-      "assets/index-DUnk_YKP.css"
+      "assets/index-C6t1fNhP.css"
     ]
   },
   "node_modules/canvg/lib/index.es.js": {
-    "file": "assets/index.es-D11M0yu9.js",
+    "file": "assets/index.es-CGPwq3Sj.js",
     "name": "index.es",
     "src": "node_modules/canvg/lib/index.es.js",
     "isDynamicEntry": true,
@@ -52,7 +52,7 @@
     ]
   },
   "src/views/MolderiaView.jsx": {
-    "file": "assets/MolderiaView-ClhAmRXa.js",
+    "file": "assets/MolderiaView-wKleONjo.js",
     "name": "MolderiaView",
     "src": "src/views/MolderiaView.jsx",
     "isDynamicEntry": true,
