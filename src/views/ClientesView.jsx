@@ -42,13 +42,13 @@ export default function ClientesView({
               >{c.nombre}</h3>
               <p className="text-stone-400 text-xs mb-4">{c.telefono}</p>
               
-              <div className="mt-3 divide-y divide-stone-800/60 bg-stone-950/40 px-3 py-1.5 rounded-2xl border border-stone-800/80">
+              <div className="mt-3 bg-stone-950/40 p-3 rounded-2xl border border-stone-800/80 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
                 {MEDIDAS_LISTA.map(m => {
                   const val = obtenerMedida(c.medidas, m);
                   return (
-                    <div key={m} className="flex items-center justify-between py-1 text-[11px]">
-                      <span className="text-stone-400">{m}</span>
-                      <span className="font-medium text-stone-200">{val || '—'}</span>
+                    <div key={m} className="flex items-center justify-between border-b border-stone-800/50 pb-1">
+                      <span className="text-stone-400 truncate pr-1">{m}</span>
+                      <span className="font-medium text-stone-200 shrink-0">{val || '—'}</span>
                     </div>
                   );
                 })}

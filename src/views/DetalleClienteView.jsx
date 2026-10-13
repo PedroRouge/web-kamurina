@@ -51,9 +51,9 @@ export default function DetalleClienteView({
         </div>
 
         <h3 className="text-lg font-semibold mb-3">Medidas Registradas</h3>
-        <div className="divide-y divide-stone-800 text-xs mb-8 bg-stone-950/50 p-4 rounded-2xl border border-stone-800 flex flex-col">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs mb-8 bg-stone-950/50 p-4 rounded-2xl border border-stone-800">
           {MEDIDAS_LISTA.map(m => (
-            <div key={m} className="flex items-center justify-between py-1.5 text-stone-300">
+            <div key={m} className="flex items-center justify-between border-b border-stone-800/60 pb-1.5 text-stone-300">
               <span className="text-stone-400 font-medium">{m}</span>
               <strong className="text-white">{obtenerMedida(clienteSeleccionado.medidas, m) || '—'}</strong>
             </div>
@@ -232,9 +232,9 @@ export default function DetalleClienteView({
           </h3>
           
           {/* shrink-0 evita que las medidas se aplasten si falta espacio */}
-          <div className="flex flex-col text-xs mb-3 shrink-0 divide-y divide-gray-200">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm mb-4 shrink-0">
             {MEDIDAS_LISTA.map(m => (
-              <div key={m} className="flex justify-between py-0.5">
+              <div key={m} className="flex justify-between border-b border-gray-200 py-1">
                 <span className="text-gray-800 font-medium">{m}:</span>
                 <span className="font-bold text-black">{obtenerMedida(clienteSeleccionado.medidas, m) || '—'}</span>
               </div>
