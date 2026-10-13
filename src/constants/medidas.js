@@ -17,8 +17,11 @@ export const MEDIDAS_LISTA = [
   'Altura de rodilla',
   'Largo de falda',
   'Largo pantalón',
-  'Tiro de pantalón'
 ];
+
+const mitadMedidas = Math.ceil(MEDIDAS_LISTA.length / 2);
+export const MEDIDAS_COL_IZQ = MEDIDAS_LISTA.slice(0, mitadMedidas);
+export const MEDIDAS_COL_DER = MEDIDAS_LISTA.slice(mitadMedidas);
 
 export const ALIASES_MEDIDAS = {
   'Contorno cuello': ['Contorno cuello', 'Contorno de Cuello', 'Contorno de cuello', 'Cuello'],

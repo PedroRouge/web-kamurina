@@ -1,5 +1,5 @@
 import React from 'react';
-import { MEDIDAS_LISTA, obtenerMedida } from '../constants/medidas';
+import { MEDIDAS_COL_IZQ, MEDIDAS_COL_DER, obtenerMedida } from '../constants/medidas';
 
 export default function ClientesView({
 
@@ -42,16 +42,29 @@ export default function ClientesView({
               >{c.nombre}</h3>
               <p className="text-stone-400 text-xs mb-4">{c.telefono}</p>
               
-              <div className="mt-3 bg-stone-950/40 p-3 rounded-2xl border border-stone-800/80 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">
-                {MEDIDAS_LISTA.map(m => {
-                  const val = obtenerMedida(c.medidas, m);
-                  return (
-                    <div key={m} className="flex items-center justify-between border-b border-stone-800/50 pb-1">
-                      <span className="text-stone-400 truncate pr-1">{m}</span>
-                      <span className="font-medium text-stone-200 shrink-0">{val || '—'}</span>
-                    </div>
-                  );
-                })}
+              <div className="mt-3 bg-stone-950/40 p-3 rounded-2xl border border-stone-800/80 grid grid-cols-2 gap-x-4 text-[11px]">
+                <div className="flex flex-col gap-y-1">
+                  {MEDIDAS_COL_IZQ.map(m => {
+                    const val = obtenerMedida(c.medidas, m);
+                    return (
+                      <div key={m} className="flex items-center justify-between border-b border-stone-800/50 pb-1">
+                        <span className="text-stone-400 truncate pr-1">{m}</span>
+                        <span className="font-medium text-stone-200 shrink-0">{val || '—'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-col gap-y-1">
+                  {MEDIDAS_COL_DER.map(m => {
+                    const val = obtenerMedida(c.medidas, m);
+                    return (
+                      <div key={m} className="flex items-center justify-between border-b border-stone-800/50 pb-1">
+                        <span className="text-stone-400 truncate pr-1">{m}</span>
+                        <span className="font-medium text-stone-200 shrink-0">{val || '—'}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           ))

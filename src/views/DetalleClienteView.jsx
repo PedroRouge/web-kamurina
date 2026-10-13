@@ -1,7 +1,7 @@
 import React from 'react';
 import { doc, setDoc } from "firebase/firestore";
 import { db } from '../services/firebase';
-import { MEDIDAS_LISTA, obtenerMedida } from '../constants/medidas';
+import { MEDIDAS_LISTA, MEDIDAS_COL_IZQ, MEDIDAS_COL_DER, obtenerMedida } from '../constants/medidas';
 import { sonNombresEquivalentes, coincidenTelefonos } from '../utils/clienteMatcher';
 
 export default function DetalleClienteView({
@@ -51,13 +51,23 @@ export default function DetalleClienteView({
         </div>
 
         <h3 className="text-lg font-semibold mb-3">Medidas Registradas</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs mb-8 bg-stone-950/50 p-4 rounded-2xl border border-stone-800">
-          {MEDIDAS_LISTA.map(m => (
-            <div key={m} className="flex items-center justify-between border-b border-stone-800/60 pb-1.5 text-stone-300">
-              <span className="text-stone-400 font-medium">{m}</span>
-              <strong className="text-white">{obtenerMedida(clienteSeleccionado.medidas, m) || '—'}</strong>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 text-xs mb-8 bg-stone-950/50 p-4 rounded-2xl border border-stone-800">
+          <div className="flex flex-col gap-y-1.5">
+            {MEDIDAS_COL_IZQ.map(m => (
+              <div key={m} className="flex items-center justify-between border-b border-stone-800/60 pb-1.5 text-stone-300">
+                <span className="text-stone-400 font-medium">{m}</span>
+                <strong className="text-white">{obtenerMedida(clienteSeleccionado.medidas, m) || '—'}</strong>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-y-1.5">
+            {MEDIDAS_COL_DER.map(m => (
+              <div key={m} className="flex items-center justify-between border-b border-stone-800/60 pb-1.5 text-stone-300">
+                <span className="text-stone-400 font-medium">{m}</span>
+                <strong className="text-white">{obtenerMedida(clienteSeleccionado.medidas, m) || '—'}</strong>
+              </div>
+            ))}
+          </div>
         </div>
 
         <h3 className="text-lg font-semibold mb-3">Historial de Pedidos</h3>
@@ -232,13 +242,23 @@ export default function DetalleClienteView({
           </h3>
           
           {/* shrink-0 evita que las medidas se aplasten si falta espacio */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm mb-4 shrink-0">
-            {MEDIDAS_LISTA.map(m => (
-              <div key={m} className="flex justify-between border-b border-gray-200 py-1">
-                <span className="text-gray-800 font-medium">{m}:</span>
-                <span className="font-bold text-black">{obtenerMedida(clienteSeleccionado.medidas, m) || '—'}</span>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-x-8 text-sm mb-4 shrink-0">
+            <div className="flex flex-col">
+              {MEDIDAS_COL_IZQ.map(m => (
+                <div key={m} className="flex justify-between border-b border-gray-200 py-1">
+                  <span className="text-gray-800 font-medium">{m}:</span>
+                  <span className="font-bold text-black">{obtenerMedida(clienteSeleccionado.medidas, m) || '—'}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col">
+              {MEDIDAS_COL_DER.map(m => (
+                <div key={m} className="flex justify-between border-b border-gray-200 py-1">
+                  <span className="text-gray-800 font-medium">{m}:</span>
+                  <span className="font-bold text-black">{obtenerMedida(clienteSeleccionado.medidas, m) || '—'}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* flex-1 hace que esta sección crezca hasta tocar el fondo de la hoja */}
