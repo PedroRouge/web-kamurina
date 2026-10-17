@@ -1,5 +1,6 @@
 export const MEDIDAS_LISTA = [
   'Contorno cuello',
+  'Contorno busto',
   'Contorno cintura',
   'Contorno cadera',
   'Largo de espalda',
@@ -25,6 +26,7 @@ export const MEDIDAS_COL_DER = MEDIDAS_LISTA.slice(mitadMedidas);
 
 export const ALIASES_MEDIDAS = {
   'Contorno cuello': ['Contorno cuello', 'Contorno de Cuello', 'Contorno de cuello', 'Cuello'],
+  'Contorno busto':['Contorno busto', 'Contorno de busto', 'Contorno de Busto', 'Busto'],
   'Contorno cintura': ['Contorno cintura', 'Contorno de Cintura', 'Contorno de cintura', 'Cintura'],
   'Contorno cadera': ['Contorno cadera', 'Contorno de Cadera', 'Contorno de cadera', 'Cadera'],
   'Largo de espalda': ['Largo de espalda', 'Largo de Espalda', 'Largo de Talle', 'Largo espalda'],
